@@ -2,41 +2,54 @@ from Tkinter import *
 from globals import K
 
 from position import Position
+from movement import Movement
+from rules import Interface
+from highlight import Highlight
 from cpu import CPU
 
 
 class Game():
 
-	def __init__(self, canvas):
+	def __init__(self, canvas, root):
 
 		# global variables
 		self.k = K()
 
-		# Tkinter object, draws images
+		# piece - piece identifier.  px, py - piece position.  mx, my - mouse position
+		self.data = { "piece" : None, "px" : 0, "py" : 0, "mx" : 0 , "my" : 0}
+
+		# Canvas from graphics class. Tkinter object, draws images
 		self.canvas = canvas
 
 		# contains board and functions pertaining to position
-		self.position = Position()
-		self.position.update(self.canvas)
+		self.position = Position(self.canvas)
+		self.position.update()
+
+		# contains functions for moving pieces
+		self.movement = Movement(self.canvas, self.position)
+
+		# handles turn change and win
+		self.interface = Interface(self.canvas)
+
+		# creates highlights around boxes
+		self.highlight = Highlight(self.canvas, self.position)
 
 		# finds move for computer player
 		self.cpu = CPU(self.position)
 
-		# piece - piece identifier.  px, py - piece position.  mx, my - mouse position
-		self.movementData = { "piece" : None, "px" : 0, "py" : 0, "mx" : 0 , "my" : 0}
-
-		#location of piece before moving
-		self.originalPosition = None
+		# keeps track of current turn
+		self.color = "token"
 
 		# binds events to functions, allows user to click and drag
-		self.canvas.tag_bind("token", "<ButtonPress-1>", self.mouseClick)
-		self.canvas.tag_bind("token", "<B1-Motion>", self.mouseMove)
-		self.canvas.tag_bind("token", "<ButtonRelease-1>", self.mouseRelease)
+		self.canvas.tag_bind(self.color, "<ButtonPress-1>", self.mouseClick)
+		self.canvas.tag_bind(self.color, "<B1-Motion>", self.mouseMove)
+		self.canvas.tag_bind(self.color, "<ButtonRelease-1>", self.mouseRelease)
 
-		#boxes used in animation
-		self.green = self.canvas.find_withtag("green")
-		self.red = self.canvas.find_withtag("red")
-		self.yellow = self.canvas.find_withtag("yellow")
+		# true when menu is displayed, else false
+		self.menuOn = False
+
+		# binds menu to escape key
+		root.bind('<Escape>', self.showMenu)
 
 
 
@@ -54,15 +67,17 @@ class Game():
 			to the mouse click event
 		'''
 
-		self.movementData["piece"] = self.canvas.find_closest(event.x, event.y)
-		self.movementData["mx"] = event.x
-		self.movementData["my"] = event.y
+		self.data["piece"] = self.canvas.find_closest(event.x, event.y)
+		self.data["mx"] = event.x
+		self.data["my"] = event.y
 
-		self.canvas.lift(self.movementData["piece"])
+		self.canvas.lift(self.data["piece"])
 
 		self.updateCoords()
-		self.originalPosition = self.getPosition()
-		self.highlight()
+
+		self.position.originalPosition = self.getPosition()
+
+		self.highlight.createBorder(self.getPosition(), self.data)
 
 
 
@@ -80,13 +95,15 @@ class Game():
 			The corresponding piece is moved and animate() has been called
 		'''
 
-		change = self.getMovement(event)
-		self.move(change[0], change[1])
+		change = self.movement.getMovement(event, self.data)
+		self.movement.move(change[0], change[1], self.data)
+
+		self.updateCoords()
 
 		try:
-			self.highlight()
+			self.highlight.createBorder(self.getPosition(), self.data)
 		except TypeError:
-			self.push()
+			self.movement.push(self.data)
 
 
 
@@ -108,204 +125,98 @@ class Game():
 		'''
 
 		if (self.canMove()):
-			self.snap()
-			self.position.capture(self.canvas, self.getPosition(),
-								  self.canvas.gettags(self.movementData["piece"]))
-			self.position.update(self.canvas)
+			self.movement.snap(self.data)
+			self.position.capture(self.getPosition(), self.canvas.gettags(self.data["piece"]))
+			self.position.update()
 
-			if (self.originalPosition != self.getPosition()):
+			if (self.position.originalPosition != self.getPosition()):
 				self.changeTurn()
 
 		else:
-			self.reset()
+			self.movement.reset(self.data)
 
-		self.checkWin()
-		self.clearHighlight()
-		self.movementData["piece"] = NONE
-		self.movementData["mx"] = 0
-		self.movementData["my"] = 0
+		self.interface.checkWin()
 
+		self.highlight.clearBorder()
 
-
-	def getMovement(self, event):
-
-		dx = event.x - self.movementData["mx"]
-		dy = event.y - self.movementData["my"]
-
-		if ((self.movementData["px"] <= -20 and dx < 0) or
-			(self.movementData["px"] >= self.k.width - 44 and dx > 0) ):
-			 	dx = 0
-
-		if ((self.movementData["py"] <= -20 and dy < 0) or
-			(self.movementData["py"] >= self.k.height - 59 and dy > 0) ):
-			 	dy = 0
-
-		self.movementData["mx"] = event.x
-		self.movementData["my"] = event.y
-		self.updateCoords()
-
-		return (dx, dy)
+		self.data["piece"] = NONE
+		self.data["mx"] = 0
+		self.data["my"] = 0
 
 
 
-	def snap(self):
+	def showMenu(self, event):
 
-		pos = self.getPosition()
+		if (not self.menuOn):
+			self.unbind()
+			self.menuOn = True
+		else:
+			self.bind()
+			self.menuOn = False
 
-		dx = self.k.space * pos[0] - self.movementData["px"]
-		dy = self.k.space * pos[1] - self.movementData["py"]
-
-		self.move(dx, dy)
-
-
-
-	def reset(self):
-
-		dx = self.k.space * self.originalPosition[0] - self.movementData["px"]
-		dy = self.k.space * self.originalPosition[1] - self.movementData["py"]
-
-		self.move(dx, dy)
-
-
-
-	def push(self):
-
-		dx = dy = 0
-
-		if (self.movementData["px"] < 0):
-			dx = 10
-		if (self.movementData["px"] >= self.k.width - 30):
-			dx = -10
-
-		if (self.movementData["py"] < 0):
-			dy = 10
-		if (self.movementData["py"] > self.k.height - 30):
-			dy = -10
-
-		self.move(dx, dy)
-
-
-
-	def move(self, dx, dy):
-
-		self.canvas.move(self.movementData["piece"], dx, dy)
+		self.interface.menu()
 
 
 
 	def changeTurn(self):
 
-		self.canvas.tag_unbind("token", "<ButtonPress-1>")
-		self.canvas.tag_unbind("token", "<B1-Motion>")
-		self.canvas.tag_unbind("token", "<ButtonRelease-1>")
+		self.unbind()
+		self.changeColor()
+		self.bind()
 
-		if (self.getColor() == "white"):
-			unbind = "white"
-			bind = "black"
+
+
+	def unbind(self):
+
+		self.canvas.tag_unbind(self.color, "<ButtonPress-1>")
+		self.canvas.tag_unbind(self.color, "<B1-Motion>")
+		self.canvas.tag_unbind(self.color, "<ButtonRelease-1>")
+
+
+
+	def bind(self):
+
+		self.canvas.tag_bind(self.color, "<ButtonPress-1>", self.mouseClick)
+		self.canvas.tag_bind(self.color, "<B1-Motion>", self.mouseMove)
+		self.canvas.tag_bind(self.color, "<ButtonRelease-1>", self.mouseRelease)
+
+
+
+	def setColor(self):
+
+		tags = self.canvas.gettags(self.data["piece"])
+		self.color = tags[1]
+
+
+
+	def changeColor(self):
+
+		if (self.color == "token"):
+			self.setColor()
+
+		if (self.color == "white"):
+			self.color = "black"
 		else:
-			unbind = "black"
-			bind = "white"
-
-		self.canvas.tag_unbind(unbind, "<ButtonPress-1>")
-		self.canvas.tag_unbind(unbind, "<B1-Motion>")
-		self.canvas.tag_unbind(unbind, "<ButtonRelease-1>")
-
-		self.canvas.tag_bind(bind, "<ButtonPress-1>", self.mouseClick)
-		self.canvas.tag_bind(bind, "<B1-Motion>", self.mouseMove)
-		self.canvas.tag_bind(bind, "<ButtonRelease-1>", self.mouseRelease)
-
-
-
-	def getColor(self):
-
-		tags = self.canvas.gettags(self.movementData["piece"])
-		return tags[1]
-
-
-
-	def checkWin(self):
-
-		kings = self.canvas.find_withtag("king")
-
-		if (self.canvas.gettags(kings[0])[1] == "white"):
-			white = kings[0]
-			black = kings[1]
-		else:
-			black = kings[0]
-			white = kings[1]
-
-		if (self.canvas.itemcget(black, "state") == "hidden"):
-			self.whiteWin()
-
-		if (self.canvas.itemcget(white, "state") == "hidden"):
-			self.blackWin()
-
-
-
-	def whiteWin(self):
-
-		self.canvas.create_text((self.k.width / 2, self.k.height / 2),
-		 						 text = "White Wins!")
-
-
-
-	def blackWin(self):
-
-		self.canvas.create_text((self.k.width / 2, self.k.height / 2),
-		 						 text = "Black Wins!")
-
-
-
-	def highlight(self):
-
-		pos = self.getPosition()
-		x = pos[0] * self.k.space
-		y = pos[1] * self.k.space
-
-		if (self.originalPosition == pos):
-			self.canvas.itemconfig(self.green, state = "hidden")
-			self.canvas.itemconfig(self.red, state = "hidden")
-			self.canvas.itemconfig(self.yellow, state = "normal")
-			self.canvas.coords(self.yellow, (x - 1, y - 1) )
-
-		elif (not self.canMove() ):
-			self.canvas.itemconfig(self.green, state = "hidden")
-			self.canvas.itemconfig(self.red, state = "normal")
-			self.canvas.itemconfig(self.yellow, state = "hidden")
-			self.canvas.coords(self.red, (x - 1, y - 1) )
-
-		elif (self.canMove() ):
-			self.canvas.itemconfig(self.green, state = "normal")
-			self.canvas.itemconfig(self.yellow, state = "hidden")
-			self.canvas.itemconfig(self.red, state = "hidden")
-			self.canvas.coords(self.green, (x - 1, y - 1) )
-
-
-
-	def clearHighlight(self):
-
-		self.canvas.itemconfig(self.green, state = "hidden")
-		self.canvas.itemconfig(self.red, state = "hidden")
-		self.canvas.itemconfig(self.yellow, state = "hidden")
+			self.color = "white"
 
 
 
 	def updateCoords(self):
 
-		coords = self.canvas.coords(self.movementData["piece"])
-		self.movementData["px"] = coords[0]
-		self.movementData["py"] = coords[1]
+		coords = self.canvas.coords(self.data["piece"])
+		self.data["px"] = coords[0]
+		self.data["py"] = coords[1]
 
 
 
 	def canMove(self):
 
-		return self.position.canMove(self.canvas.gettags(self.movementData["piece"]),
-							  		 self.originalPosition,
-							  		 self.position.getPosition(self.movementData["px"],
-									 						   self.movementData["py"]))
+		return self.position.canMove(self.canvas.gettags(self.data["piece"]),
+							  		 self.position.getPosition(self.data["px"],
+									 						   self.data["py"]))
 
 
 
 	def getPosition(self):
 
-		return self.position.getPosition(self.movementData["px"], self.movementData["py"])
+		return self.position.getPosition(self.data["px"], self.data["py"])
