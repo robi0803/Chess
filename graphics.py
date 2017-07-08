@@ -10,9 +10,13 @@ class Graphics():
 
         self.createWindow(root)
 
+        # create canvas
+        self.canvas = Canvas(root)
+        self.canvas.pack(expand = 1, fill = BOTH)
+
         self.loadImages()
 
-        self.createImages(root)
+        self.createImages()
 
 
 
@@ -45,11 +49,14 @@ class Graphics():
 
 
 
-    def createImages(self, root):
+    def restart(self, event):
 
-        # create canvas
-        self.canvas = Canvas(root)
-        self.canvas.pack(expand = 1, fill = BOTH)
+        self.canvas.delete("all")
+        self.createImages()
+
+
+
+    def createImages(self):
 
         # board
         self.canvas.create_image(0, 0, image = self.BoardImage, anchor = "nw",
@@ -132,3 +139,60 @@ class Graphics():
 
             self.canvas.create_image(i, 6 * self.k.space, image = self.WhitePawnImage,
                                      anchor = "nw", tags = ("token", "white", "pawn") )
+
+        # menu background
+        self.rec = self.canvas.create_rectangle(0, 0, self.k.width, self.k.height, fill = "black",
+                                                state = "hidden", stipple = "gray75", tags = "bg")
+
+        # resume button
+        self.canvas.create_text(self.k.width / 2, self.k.height / 3, text = "Resume",
+                                fill = "white", font = ("system", 20), state = "hidden",
+                                tags = "resumeText")
+
+        self.canvas.create_rectangle(3 * self.k.space,  # origin x
+                                    2.3 * self.k.space, # origin y
+                                    5 * self.k.space,   # destination x
+                                    3 * self.k.space,   # destination y
+                                    fill = "black", activefill = "gray",
+                                    tags = "resumeBg", state = "hidden")
+
+        # restart button
+        self.canvas.create_text(self.k.width / 2, self.k.height / 2, text = "Restart",
+                                fill = "white", font = ("system", 20), state = "hidden",
+                                tags = "restartText")
+
+        self.canvas.create_rectangle(3 * self.k.space,    # origin x
+                                     3.65 * self.k.space, # origin y
+                                     5 * self.k.space,    # destination x
+                                     4.35 * self.k.space, # destination y
+                                     fill = "black", activefill = "gray",
+                                     tags = "restartBg", state = "hidden")
+
+        # quit button
+        self.canvas.create_text(self.k.width / 2, 2 * self.k.height / 3, text = "Quit",
+                                fill = "white", font = ("system", 20), state = "hidden",
+                                tags = "quitText")
+
+        self.canvas.create_rectangle(3 * self.k.space,   # origin x
+                                     5 * self.k.space,   # origin y
+                                     5 * self.k.space,   # destination x
+                                     5.7 * self.k.space, # destination y
+                                     fill = "black", activefill = "gray",
+                                     tags = "quitBg", state = "hidden")
+
+        # win menu
+        self.canvas.create_rectangle(self.k.space,      # origin x
+                                     self.k.space,      # origin y
+                                     7 * self.k.space,  # destination x
+                                     7 * self.k.space,  # destination y
+                                     fill = "gray", tags = "winBg", state = "hidden")
+
+        self.canvas.create_text(self.k.width / 2, self.k.height / 3,
+                                text = "White Wins!", fill = "white",
+                                font = ("system", 20), state = "hidden",
+                                tags = "whiteWin")
+
+        self.canvas.create_text(self.k.width / 2, self.k.height / 3,
+                                text = "Black Wins!", fill = "white",
+                                font = ("system", 20), state = "hidden",
+                                tags = "blackWin")

@@ -3,14 +3,14 @@ from globals import K
 
 from position import Position
 from movement import Movement
-from rules import Interface
+from interface import Interface
 from highlight import Highlight
 from cpu import CPU
 
 
 class Game():
 
-	def __init__(self, canvas, root):
+	def __init__(self, graphics, root):
 
 		# global variables
 		self.k = K()
@@ -18,8 +18,16 @@ class Game():
 		# piece - piece identifier.  px, py - piece position.  mx, my - mouse position
 		self.data = { "piece" : None, "px" : 0, "py" : 0, "mx" : 0 , "my" : 0}
 
+		# keeps track of current turn
+		self.color = "token"
+
+		# true when menu is displayed, else false
+		self.menuOn = False
+
+		self.graphics = graphics
+
 		# Canvas from graphics class. Tkinter object, draws images
-		self.canvas = canvas
+		self.canvas = graphics.canvas
 
 		# contains board and functions pertaining to position
 		self.position = Position(self.canvas)
@@ -29,7 +37,7 @@ class Game():
 		self.movement = Movement(self.canvas, self.position)
 
 		# handles turn change and win
-		self.interface = Interface(self.canvas)
+		self.interface = Interface(graphics)
 
 		# creates highlights around boxes
 		self.highlight = Highlight(self.canvas, self.position)
@@ -37,16 +45,10 @@ class Game():
 		# finds move for computer player
 		self.cpu = CPU(self.position)
 
-		# keeps track of current turn
-		self.color = "token"
-
 		# binds events to functions, allows user to click and drag
 		self.canvas.tag_bind(self.color, "<ButtonPress-1>", self.mouseClick)
 		self.canvas.tag_bind(self.color, "<B1-Motion>", self.mouseMove)
 		self.canvas.tag_bind(self.color, "<ButtonRelease-1>", self.mouseRelease)
-
-		# true when menu is displayed, else false
-		self.menuOn = False
 
 		# binds menu to escape key
 		root.bind('<Escape>', self.showMenu)
@@ -72,6 +74,8 @@ class Game():
 		self.data["my"] = event.y
 
 		self.canvas.lift(self.data["piece"])
+
+		self.position.update()
 
 		self.updateCoords()
 
@@ -127,7 +131,6 @@ class Game():
 		if (self.canMove()):
 			self.movement.snap(self.data)
 			self.position.capture(self.getPosition(), self.canvas.gettags(self.data["piece"]))
-			self.position.update()
 
 			if (self.position.originalPosition != self.getPosition()):
 				self.changeTurn()
@@ -147,14 +150,8 @@ class Game():
 
 	def showMenu(self, event):
 
-		if (not self.menuOn):
-			self.unbind()
-			self.menuOn = True
-		else:
-			self.bind()
-			self.menuOn = False
-
-		self.interface.menu()
+		self.unbind()
+		self.interface.menu(event)
 
 
 

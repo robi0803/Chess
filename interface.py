@@ -3,44 +3,22 @@ from globals import K
 
 class Interface():
 
-    def __init__(self, canvas):
+    def __init__(self, graphics):
 
         # globals
         self.k = K()
 
+        self.graphics = graphics
+
         # canvas from graphics class
-        self.canvas = canvas
+        self.canvas = graphics.canvas
 
-        # menu background
-        self.rec = self.canvas.create_rectangle(0, 0, self.k.width, self.k.height, fill = "black",
-                                                state = "hidden", stipple = "gray75")
-
-        # resume button
-        self.resumeText = self.canvas.create_text(self.k.width / 2, self.k.height / 3, text = "Resume",
-                                              fill = "white", font = ("system", 20), state = "hidden")
-
-        self.resumeBg = self.canvas.create_rectangle(3 * self.k.space,   # origin x
-                                                     2.3 * self.k.space, # origin y
-                                                     5 * self.k.space,   # destination x
-                                                     3 * self.k.space,   # destination y
-                                                     fill = "black", activefill = "gray",
-                                                     state = "hidden")
-
-        # restart button
-        self.restartText = self.canvas.create_text(self.k.width / 2, 2 * self.k.height / 3, text = "Restart",
-                                              fill = "white", font = ("system", 20), state = "hidden")
-
-        self.restartBg = self.canvas.create_rectangle(3 * self.k.space,   # origin x
-                                                     5 * self.k.space, # origin y
-                                                     5 * self.k.space,   # destination x
-                                                     5.7 * self.k.space,   # destination y
-                                                     fill = "black", activefill = "gray",
-                                                     state = "hidden")
 
 
     def checkWin(self):
 
     	kings = self.canvas.find_withtag("king")
+        print kings
 
         if (self.canvas.gettags(kings[0])[1] == "white"):
 			white = kings[0]
@@ -59,35 +37,112 @@ class Interface():
 
     def whiteWin(self):
 
-        self.canvas.create_text((self.k.width / 2, self.k.height / 2),
-    		 					 text = "White Wins!")
+        self.findImages()
+        '''
 
+        self.canvas.itemconfig(self.winBg, state = "disabled")
+        self.canvas.itemconfig(self.whiteWin, state = "disabled")
+        self.canvas.itemconfig(self.restartText, state = "disabled")
+        self.canvas.itemconfig(self.restartBg, state = "normal")
+        self.canvas.itemconfig(self.quitText, state = "disabled")
+        self.canvas.itemconfig(self.quitBg, state = "normal")
+        self.canvas.tag_raise(self.winBg)
+        self.canvas.tag_raise(self.whiteWin)
+        self.canvas.tag_raise(self.restartBg)
+        self.canvas.tag_raise(self.restartText)
+        self.canvas.tag_raise(self.quitBg)
+        self.canvas.tag_raise(self.quitText)
+
+        self.canvas.tag_bind("restartBg", "<ButtonPress-1>", self.graphics.restart)
+        self.canvas.tag_bind("quitBg", "<ButtonPress-1>", self.exitGame)
+        '''
+        x = 4
+        self.graphics.restart(x)
 
 
     def blackWin(self):
 
-        self.canvas.create_text((self.k.width / 2, self.k.height / 2),
-    		 					 text = "Black Wins!")
+        self.findImages()
+
+        self.canvas.itemconfig(self.winBg, state = "disabled")
+        self.canvas.itemconfig(self.blackWin, state = "disabled")
+        self.canvas.itemconfig(self.restartText, state = "disabled")
+        self.canvas.itemconfig(self.restartBg, state = "normal")
+        self.canvas.itemconfig(self.quitText, state = "disabled")
+        self.canvas.itemconfig(self.quitBg, state = "normal")
+        self.canvas.tag_raise(self.winBg)
+        self.canvas.tag_raise(self.blackWin)
+        self.canvas.tag_raise(self.restartBg)
+        self.canvas.tag_raise(self.restartText)
+        self.canvas.tag_raise(self.quitBg)
+        self.canvas.tag_raise(self.quitText)
+
+        self.canvas.tag_bind("restartBg", "<ButtonPress-1>", self.graphics.restart)
+        self.canvas.tag_bind("quitBg", "<ButtonPress-1>", self.exitGame)
 
 
 
-    def menu(self):
+    def menu(self, event):
 
-        if (self.canvas.itemcget(self.rec, "state") == "hidden"):
-            self.canvas.itemconfig(self.rec, state = "disabled")
+        self.findImages()
+
+        if (self.canvas.itemcget(self.bg, "state") == "hidden"):
+
+            self.canvas.itemconfig(self.bg, state = "disabled")
             self.canvas.itemconfig(self.resumeText, state = "disabled")
             self.canvas.itemconfig(self.resumeBg, state = "normal")
             self.canvas.itemconfig(self.restartText, state = "disabled")
             self.canvas.itemconfig(self.restartBg, state = "normal")
-            self.canvas.tag_raise(self.rec)
+            self.canvas.itemconfig(self.quitText, state = "disabled")
+            self.canvas.itemconfig(self.quitBg, state = "normal")
+            self.canvas.tag_raise(self.bg)
             self.canvas.tag_raise(self.resumeBg)
             self.canvas.tag_raise(self.resumeText)
             self.canvas.tag_raise(self.restartBg)
             self.canvas.tag_raise(self.restartText)
+            self.canvas.tag_raise(self.quitBg)
+            self.canvas.tag_raise(self.quitText)
+
+            self.canvas.tag_bind("resumeBg", "<ButtonPress-1>", self.hide)
+            self.canvas.tag_bind("restartBg", "<ButtonPress-1>", self.graphics.restart)
+            self.canvas.tag_bind("quitBg", "<ButtonPress-1>", self.exitGame)
 
         else:
-            self.canvas.itemconfig(self.rec, state = "hidden")
-            self.canvas.itemconfig(self.resumeBg, state = "hidden")
-            self.canvas.itemconfig(self.resumeText, state = "hidden")
-            self.canvas.itemconfig(self.restartBg, state = "hidden")
-            self.canvas.itemconfig(self.restartText, state = "hidden")
+            self.hide(event)
+
+
+
+    def hide(self, event):
+
+        self.canvas.itemconfig(self.bg, state = "hidden")
+        self.canvas.itemconfig(self.resumeBg, state = "hidden")
+        self.canvas.itemconfig(self.resumeText, state = "hidden")
+        self.canvas.itemconfig(self.restartBg, state = "hidden")
+        self.canvas.itemconfig(self.restartText, state = "hidden")
+        self.canvas.itemconfig(self.quitBg, state = "hidden")
+        self.canvas.itemconfig(self.quitText, state = "hidden")
+
+        self.canvas.tag_unbind("resumeBg", "<ButtonPress-1>")
+        self.canvas.tag_unbind("restartBg", "<ButtonPress-1>")
+        self.canvas.tag_unbind("quitBg", "<ButtonPress-1>")
+
+
+
+    def findImages(self):
+
+        self.bg = self.canvas.find_withtag("bg")
+    	self.resumeText = self.canvas.find_withtag("resumeText")
+    	self.resumeBg = self.canvas.find_withtag("resumeBg")
+    	self.restartText = self.canvas.find_withtag("restartText")
+    	self.restartBg = self.canvas.find_withtag("restartBg")
+        self.quitText = self.canvas.find_withtag("quitText")
+        self.quitBg = self.canvas.find_withtag("quitBg")
+        self.winBg = self.canvas.find_withtag("winBg")
+        self.whiteWin = self.canvas.find_withtag("whiteWin")
+        self.blackWin = self.canvas.find_withtag("blackWin")
+
+
+
+    def exitGame(self, event):
+
+        exit()
