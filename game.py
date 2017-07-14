@@ -2,6 +2,7 @@ from Tkinter import *
 from globals import K
 
 from position import Position
+from specialmoves import SpecialMoves
 from movement import Movement
 from interface import Interface
 from highlight import Highlight
@@ -24,13 +25,17 @@ class Game():
 		# true when menu is displayed, else false
 		self.menuOn = False
 
+		# creates window and all images
 		self.graphics = graphics
 
 		# Canvas from graphics class. Tkinter object, draws images
 		self.canvas = graphics.canvas
 
+		# functions for special moves.
+		self.specialMoves = SpecialMoves(self.canvas)
+
 		# contains board and functions pertaining to position
-		self.position = Position(self.canvas)
+		self.position = Position(self.canvas, self.specialMoves)
 		self.position.update()
 
 		# contains functions for moving pieces
@@ -132,13 +137,16 @@ class Game():
 			self.movement.snap(self.data)
 			self.position.capture(self.getPosition(), self.canvas.gettags(self.data["piece"]))
 
+			print self.position.isVulnerable(self.getPosition(), self.color)
+
 			if (self.position.originalPosition != self.getPosition()):
 				self.changeTurn()
+				self.checkSpecials()
 
 		else:
 			self.movement.reset(self.data)
 
-		self.interface.checkWin()
+		self.interface.checkWin(self.unbind, self.restart)
 
 		self.highlight.clearBorder()
 
@@ -148,10 +156,34 @@ class Game():
 
 
 
+	def checkSpecials(self):
+
+		pos = self.getPosition()
+		self.specialMoves.filter(self.position.originalPosition, pos, self.unbind, self.createPiece)
+
+
+
+	def createPiece(self, event):
+
+		piece = self.canvas.find_closest(event.x, event.y)
+		tags = self.canvas.gettags(piece)
+		self.graphics.createNewPiece(tags, self.getPosition())
+		self.specialMoves.hide()
+		self.bind()
+
+
+
 	def showMenu(self, event):
 
 		self.unbind()
-		self.interface.menu(event)
+		self.interface.menu(event, self.bind, self.showMenu, self.restart)
+
+
+
+	def restart(self, event):
+
+		self.bind()
+		self.graphics.restart()
 
 
 
@@ -209,8 +241,7 @@ class Game():
 	def canMove(self):
 
 		return self.position.canMove(self.canvas.gettags(self.data["piece"]),
-							  		 self.position.getPosition(self.data["px"],
-									 						   self.data["py"]))
+		self.position.getPosition(self.data["px"], self.data["py"]))
 
 
 

@@ -2,337 +2,474 @@ from Tkinter import *
 from globals import K
 
 
+
 class Position():
 
-    def __init__(self, canvas):
+	def __init__(self, canvas, specialMoves):
 
-        # globals
-        self.k = K()
+		# globals
+		self.k = K()
 
-        self.canvas = canvas
+		self.canvas = canvas
 
-        #location of piece before moving
-        self.originalPosition = None
+		self.specialMoves = specialMoves
 
-        # stores ( identifier : color : type ) for each space
-        self.board = [[ "none" for j in xrange(0, 8)] for i in xrange(0, 8) ]
+		#location of piece before moving
+		self.originalPosition = None
 
+		# stores ( identifier : color : type ) for each space
+		self.board = [[ "none" for j in xrange(0, 8)] for i in xrange(0, 8) ]
 
 
-    def update(self):
 
-        x = 0
-        for i in range(10, self.k.width + 10, self.k.space):
-            y = 0
-            for j in range(10, self.k.height + 10, self.k.space):
+	def update(self):
 
-                piece = self.canvas.find_closest(i, j)
-                coords = self.canvas.coords(piece)
-                tags = self.canvas.gettags(piece)
+		x = 0
+		for i in range(10, self.k.width + 10, self.k.space):
+			y = 0
+			for j in range(10, self.k.height + 10, self.k.space):
 
-                if (len(tags) >= 3):
-                    self.board[x][y] = (piece, tags[1], tags[2])
-                else : self.board[x][y] = "none"
+				piece = self.canvas.find_closest(i, j)
+				coords = self.canvas.coords(piece)
+				tags = self.canvas.gettags(piece)
 
-                y += 1
-            x += 1
+				if (len(tags) >= 3):
+					self.board[x][y] = (piece, tags[1], tags[2])
+				else : self.board[x][y] = "none"
 
+				y += 1
+			x += 1
 
 
-    def capture(self, pos, tags):
 
-        x = pos[0]
-        y = pos[1]
+	def capture(self, pos, tags):
 
-        #if there is a piece and it is a different color
-        if (len(self.board[x][y]) >= 2 and
-           (self.board[x][y][1] != tags[1]) ):
+		x = pos[0]
+		y = pos[1]
 
-            self.canvas.itemconfig(self.board[x][y][0], state = "hidden")
+		#if there is a piece and it is a different color
+		if (len(self.board[x][y]) > 1 and
+		   (self.board[x][y][1] != tags[1]) ):
 
+			self.canvas.itemconfig(self.board[x][y][0], state = "hidden")
 
 
-    def getPosition(self, px, py):
 
-        x = y = None
-        for i in xrange(0, 8):
-            if ((px <  (self.k.space * (i + 1) - 30)) and
-                (px >= (self.k.space) * i - 30) ):
-                    x = i
-            if ((py <  (self.k.space * (i + 1) - 7)) and
-                (py >= (self.k.space * i - 54)) ):
-                    y = i
+	def getPosition(self, px, py):
 
-        return (x, y)
+		x = y = None
+		for i in xrange(0, 8):
+			if ((px <  (self.k.space * (i + 1) - 30)) and
+				(px >= (self.k.space) * i - 30) ):
+					x = i
+			if ((py <  (self.k.space * (i + 1) - 7)) and
+				(py >= (self.k.space * i - 54)) ):
+					y = i
 
+		return (x, y)
 
 
-    def canMove(self, tags, pos2):
 
-        pos1 = self.originalPosition
+	def canMove(self, tags, pos2):
 
-        check = False
+		pos1 = self.originalPosition
 
-        if (pos1 == pos2): check = True
+		check = False
 
-        elif (self.pathBlocked(pos2) ): check = False
+		if (pos1 == pos2): check = True
 
-        elif (self.occupied(tags, pos2) ): check = False
+		elif (self.pathBlocked(pos2) ): check = False
 
-        elif (tags[2] == "pawn"):
-            check = self.pawn(tags, pos2)
+		elif (self.occupied(tags, pos2) ): check = False
 
-        elif (tags[2] == "rook"):
-            check = self.rook(tags, pos2)
+		elif (tags[2] == "pawn"):
+			check = self.pawn(tags, pos2)
 
-        elif (tags[2] == "knight"):
-            check = self.knight(tags, pos2)
+		elif (tags[2] == "rook"):
+			check = self.rook(tags, pos2)
 
-        elif (tags[2] == "bishop"):
-            check = self.bishop(tags, pos2)
+		elif (tags[2] == "knight"):
+			check = self.knight(tags, pos2)
 
-        elif (tags[2] == "queen"):
-            check = self.queen(tags, pos2)
+		elif (tags[2] == "bishop"):
+			check = self.bishop(tags, pos2)
 
-        elif (tags[2] == "king"):
-            check = self.king(tags, pos2)
+		elif (tags[2] == "queen"):
+			check = self.queen(tags, pos2)
 
-        return check
+		elif (tags[2] == "king"):
+			check = self.king(tags, pos2)
 
+		return check
 
 
-    def occupied(self, tags, pos):
 
-        if (tags[1] == self.board[pos[0]][pos[1]][1]):
-            check = True
-        else:
-            check = False
+	def occupied(self, tags, pos):
 
-        return check
+		if (tags[1] == self.board[pos[0]][pos[1]][1]):
+			check = True
+		else:
+			check = False
 
+		return check
 
 
-    def pathBlocked(self, pos2):
 
-        pos1 = self.originalPosition
+	def pathBlocked(self, pos2):
 
-        check = False
+		pos1 = self.originalPosition
 
-        if (pos1[0] == pos2[0] or pos1[1] == pos2[1]):
-            check = self.rookPath(pos2)
-        if (abs(pos1[0] - pos2[0]) == abs(pos1[1] - pos2[1]) ):
-            check = self.bishopPath(pos2)
+		check = False
 
-        return check
+		if (pos1[0] == pos2[0] or pos1[1] == pos2[1]):
+			check = self.rookPath(pos2)
+		if (abs(pos1[0] - pos2[0]) == abs(pos1[1] - pos2[1]) ):
+			check = self.bishopPath(pos2)
 
+		return check
 
 
-    def rookPath(self, pos2):
 
-        pos1 = self.originalPosition
+	def rookPath(self, pos2):
 
-        check = False
+		pos1 = self.originalPosition
 
-        above = pos2[1] - pos1[1] < 0 and pos1[0] == pos2[0]
-        below = pos2[1] - pos1[1] > 0 and pos1[0] == pos2[0]
-        right = pos2[0] - pos1[0] > 0 and pos1[1] == pos2[1]
-        left  = pos2[0] - pos1[0] < 0 and pos1[1] == pos2[1]
+		check = False
 
-        #horizontal check
-        x = pos1[0] + 1
-        y = pos1[1]
+		above = pos2[1] - pos1[1] < 0 and pos1[0] == pos2[0]
+		below = pos2[1] - pos1[1] > 0 and pos1[0] == pos2[0]
+		right = pos2[0] - pos1[0] > 0 and pos1[1] == pos2[1]
+		left  = pos2[0] - pos1[0] < 0 and pos1[1] == pos2[1]
 
-        while (not check and x < pos2[0] and right):
-            if (self.board[x][y] != "none"):
-                check = True
-            x += 1
+		# horizontal check
+		x = pos1[0] + 1
+		y = pos1[1]
 
-        x = pos1[0] - 1
+		while (not check and x < pos2[0] and right):
+			if (self.board[x][y] != "none"):
+				check = True
+			x += 1
 
-        while (not check and x > pos2[0] and left):
-            if (self.board[x][y] != "none"):
-                check = True
-            x -= 1
+		x = pos1[0] - 1
 
-        #vertical check
-        x = pos1[0]
-        y = pos1[1] - 1
+		while (not check and x > pos2[0] and left):
+			if (self.board[x][y] != "none"):
+				check = True
+			x -= 1
 
-        while (not check and y > pos2[1] and above):
-            if (self.board[x][y] != "none"):
-                check = True
-            y -= 1
+		# vertical check
+		x = pos1[0]
+		y = pos1[1] - 1
 
-        y = pos1[1] + 1
+		while (not check and y > pos2[1] and above):
+			if (self.board[x][y] != "none"):
+				check = True
+			y -= 1
 
-        while (not check and y < pos2[1] and below):
-            if (self.board[x][y] != "none"):
-                check = True
-            y += 1
+		y = pos1[1] + 1
 
-        return check
+		while (not check and y < pos2[1] and below):
+			if (self.board[x][y] != "none"):
+				check = True
+			y += 1
 
+		return check
 
 
-    def bishopPath(self, pos2):
 
-        pos1 = self.originalPosition
+	def bishopPath(self, pos2):
 
-        check = False
+		pos1 = self.originalPosition
 
-        west = pos2[0] - pos1[0] < 0
-        east = pos2[0] - pos1[0] > 0
-        north = pos2[1] - pos1[1] < 0
-        south = pos2[1] - pos1[1] > 0
+		check = False
 
-        #southeast
-        x = pos1[0] + 1
-        y = pos1[1] + 1
+		west = pos2[0] - pos1[0] < 0
+		east = pos2[0] - pos1[0] > 0
+		north = pos2[1] - pos1[1] < 0
+		south = pos2[1] - pos1[1] > 0
 
-        while (not check and x < pos2[0] and south and east):
-            if (self.board[x][y] != "none"):
-                check = True
-            x += 1
-            y += 1
+		# southeast
+		x = pos1[0] + 1
+		y = pos1[1] + 1
 
-        #northeast
-        x = pos1[0] + 1
-        y = pos1[1] - 1
+		while (not check and x < pos2[0] and south and east):
+			if (self.board[x][y] != "none"):
+				check = True
+			x += 1
+			y += 1
 
-        while (not check and x < pos2[0] and north and east):
-            if (self.board[x][y] != "none"):
-                check = True
-            x += 1
-            y -= 1
+		# northeast
+		x = pos1[0] + 1
+		y = pos1[1] - 1
 
-        #northwest
-        x = pos1[0] - 1
-        y = pos1[1] - 1
+		while (not check and x < pos2[0] and north and east):
+			if (self.board[x][y] != "none"):
+				check = True
+			x += 1
+			y -= 1
 
-        while (not check and x > pos2[0] and north and west):
-            if (self.board[x][y] != "none"):
-                check = True
-            x -= 1
-            y -= 1
+		# northwest
+		x = pos1[0] - 1
+		y = pos1[1] - 1
 
-        #southwest
-        x = pos1[0] - 1
-        y = pos1[1] + 1
+		while (not check and x > pos2[0] and north and west):
+			if (self.board[x][y] != "none"):
+				check = True
+			x -= 1
+			y -= 1
 
-        while (not check and x > pos2[0] and south and west):
-            if (self.board[x][y] != "none"):
-                check = True
-            x -= 1
-            y += 1
+		# southwest
+		x = pos1[0] - 1
+		y = pos1[1] + 1
 
-        return check
+		while (not check and x > pos2[0] and south and west):
+			if (self.board[x][y] != "none"):
+				check = True
+			x -= 1
+			y += 1
 
+		return check
 
 
-    def pawn(self, tags, pos2):
 
-        pos1 = self.originalPosition
+	def pawn(self, tags, pos2):
 
-        check = False
+		pos1 = self.originalPosition
 
-        below = pos2[1] - pos1[1] == 1
-        above = pos2[1] - pos1[1] == -1
-        right = pos2[0] - pos1[0] == 1
-        left = pos2[0] - pos1[0] == -1
-        inCol = pos1[0] == pos2[0]
-        empty = self.board[pos2[0]][pos2[1]] == "none"
+		check = False
 
-        if (tags[1] == "black"):
+		below = pos2[1] - pos1[1] == 1
+		above = pos2[1] - pos1[1] == -1
+		right = pos2[0] - pos1[0] == 1
+		left = pos2[0] - pos1[0] == -1
+		inCol = pos1[0] == pos2[0]
+		empty = self.board[pos2[0]][pos2[1]] == "none"
 
-            if (below and inCol and empty):
-                check = True
 
-            if (below and (right or left) and
-               self.board[pos2[0]][pos2[1]][1] == "white" ):
-                    check = True
+		if (tags[1] == "black"):
 
-            if (pos1[1] == 1 and pos2[1] - pos1[1] == 2 and inCol and empty):
-                    check = True
+			if (below and inCol and empty):
+				check = True
 
-        if (tags[1] == "white"):
-            if (above and inCol and empty):
-                check = True
+			if (below and (right or left) and
+			self.board[pos2[0]][pos2[1]][1] == "white"):
+				check = True
 
-            if (above and (right or left) and
-               (self.board[pos2[0]][pos2[1]][1] == "black") ):
-                    check = True
+			if (below and (right or left) and
+			self.specialMoves.enPassant == pos2):
+				check = True
 
-            if (pos1[1] == 6 and pos2[1] - pos1[1] == -2 and inCol and empty):
-                    check = True
+			if (pos1[1] == 1 and pos2[1] - pos1[1] == 2 and inCol and empty):
+				check = True
 
-        return check
 
+		if (tags[1] == "white"):
 
+			if (above and inCol and empty):
+				check = True
 
-    def rook(self, tags, pos2):
+			if (above and (right or left) and
+			(self.board[pos2[0]][pos2[1]][1] == "black") ):
+				check = True
 
-        pos1 = self.originalPosition
+			if (above and (right or left) and
+			self.specialMoves.enPassant == pos2):
+				check = True
 
-        check = False
+			if (pos1[1] == 6 and pos2[1] - pos1[1] == -2 and inCol and empty):
+				check = True
 
-        if ( (pos1[0] == pos2[0] and pos1[1] != pos2[1]) or
-             (pos1[0] != pos2[0] and pos1[1] == pos2[1]) ):
-                 check = True;
+		return check
 
-        return check
 
 
+	def rook(self, tags, pos2):
 
-    def knight(self, tags, pos2):
+		pos1 = self.originalPosition
 
-        pos1 = self.originalPosition
+		check = False
 
-        check = False
+		if ((pos1[0] == pos2[0] and pos1[1] != pos2[1]) or
+		(pos1[0] != pos2[0] and pos1[1] == pos2[1])):
+			check = True;
 
-        if ((abs(pos2[1] - pos1[1]) == 2 and abs(pos2[0] - pos1[0]) == 1) or
-            (abs(pos2[0] - pos1[0]) == 2 and abs(pos2[1] - pos1[1]) == 1) ):
-                check = True
+		return check
 
-        return check
 
 
+	def knight(self, tags, pos2):
 
-    def bishop(self, tags, pos2):
+		pos1 = self.originalPosition
 
-        pos1 = self.originalPosition
+		check = False
 
-        check = False
+		if ((abs(pos2[1] - pos1[1]) == 2 and abs(pos2[0] - pos1[0]) == 1) or
+		(abs(pos2[0] - pos1[0]) == 2 and abs(pos2[1] - pos1[1]) == 1)):
+			check = True
 
-        if (abs(pos1[0] - pos2[0]) == abs(pos1[1] - pos2[1]) ):
-            check = True
+		return check
 
-        return check
 
 
+	def bishop(self, tags, pos2):
 
-    def queen(self, tags, pos2):
+		pos1 = self.originalPosition
 
-        pos1 = self.originalPosition
+		check = False
 
-        check = False
+		if (abs(pos1[0] - pos2[0]) == abs(pos1[1] - pos2[1])):
+			check = True
 
-        check = self.rook(tags, pos1, pos2)
+		return check
 
-        if (not check):
-            check = self.bishop(tags, pos1, pos2)
 
-        return check
 
+	def queen(self, tags, pos2):
 
+		pos1 = self.originalPosition
 
-    def king(self, tags, pos2):
+		check = False
 
-        pos1 = self.originalPosition
+		check = self.rook(tags, pos2)
 
-        check = False
+		if (not check):
+			check = self.bishop(tags, pos2)
 
-        if ((abs(pos2[0] - pos1[0]) == 1 or pos1[0] == pos2[0]) and
-            (abs(pos2[1] - pos1[1]) == 1 or pos1[1] == pos2[1]) ):
-                check = True
+		return check
 
-        return check
+
+
+	def king(self, tags, pos2):
+
+		pos1 = self.originalPosition
+
+		check = False
+
+		if ((abs(pos2[0] - pos1[0]) == 1 or pos1[0] == pos2[0]) and
+		(abs(pos2[1] - pos1[1]) == 1 or pos1[1] == pos2[1])):
+			check = True
+
+		return check
+
+
+	'''
+	def isVulnerable(self, pos, color):
+
+		vulnerable = False
+		safe = False
+		x = pos[0]
+		y = pos[1]
+
+		if (color == "white"):
+			enemy = "black"
+		else:
+			enemy = "white"
+
+		# rooks
+		while (not vulnerable and not safe and x > 0):
+
+			x -= 1
+			empty = len(self.board[x][y]) == 1
+
+			if (self.board[x][y][1] == color and not empty):
+				safe = True
+			if (self.board[x][y][1] == enemy and (self.board[x][y][2] == "rook" or
+			self.board[x][y][2] == "queen") and not empty):
+				vulnerable = True
+
+		safe = False
+		x = pos[0]
+
+		while (not vulnerable and not safe and x < 7):
+
+			x += 1
+			empty = len(self.board[x][y]) == 1
+
+			if (self.board[x][y][1] == color and not empty):
+				safe = True
+			if (self.board[x][y][1] == enemy and (self.board[x][y][2] == "rook" or
+			self.board[x][y][2] == "queen" and not empty)):
+				vulnerable = True
+
+		safe = False
+		x = pos[0]
+
+		while (not vulnerable and not safe and x > 0):
+
+			x -= 1
+			empty = len(self.board[x][y]) == 1
+
+			if (self.board[x][y][1] == color and not empty):
+				safe = True
+			if (self.board[x][y][1] == enemy and (self.board[x][y][2] == "rook" or
+			self.board[x][y][2] == "queen" and not empty)):
+				vulnerable = True
+
+		safe = False
+		y = pos[1]
+
+		while (not vulnerable and not safe and x < 7):
+
+			y += 1
+			empty = len(self.board[x][y]) == 1
+
+			if (self.board[x][y][1] == color and not empty):
+				safe = True
+			if (self.board[x][y][1] == enemy and (self.board[x][y][2] == "rook" or
+			self.board[x][y][2] == "queen" and not empty)):
+				vulnerable = True
+
+		# bishop
+		x = pos[0]
+		y = pos[1]
+
+		while (not vulnerable and not safe and x > 0 and y > 0):
+
+			x -= 1
+			y -= 1
+			empty = len(self.board[x][y]) == 1
+
+			if (self.board[x][y][1] == color and not empty):
+				safe = True
+			if (self.board[x][y][1] == enemy and (self.board[x][y][2] == "bishop" or
+			self.board[x][y][2] == "queen" and not empty)):
+				vulnerable = True
+
+		while (not vulnerable and not safe and x > 0 and y < 7):
+
+			x -= 1
+			y += 1
+			empty = len(self.board[x][y]) == 1
+
+			if (self.board[x][y][1] == color and not empty):
+				safe = True
+			if (self.board[x][y][1] == enemy and (self.board[x][y][2] == "bishop" or
+			self.board[x][y][2] == "queen" and not empty)):
+				vulnerable = True
+
+		while (not vulnerable and not safe and x < 7 and y > 0):
+
+			x += 1
+			y -= 0
+			empty = len(self.board[x][y]) == 1
+
+			if (self.board[x][y][1] == color and not empty):
+				safe = True
+			if (self.board[x][y][1] == enemy and self.board[x][y][2] == "rook" or
+			self.board[x][y][2] == "queen" and not empty):
+				vulnerable = True
+
+		while (not vulnerable and not safe and x < 7 and y > 0):
+
+			x += 1
+			y += 1
+			empty = len(self.board[x][y]) == 1
+
+			if (self.board[x][y][1] == color and not empty):
+				safe = True
+			if (self.board[x][y][1] == enemy and self.board[x][y][2] == "rook" or
+			self.board[x][y][2] == "queen" and not empty):
+				vulnerable = True
+
+		return vulnerable
+		'''
