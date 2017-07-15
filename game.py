@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 from globals import K
 
 from position import Position
@@ -134,10 +134,11 @@ class Game():
 		'''
 
 		if (self.canMove()):
+
 			self.movement.snap(self.data)
 			self.position.capture(self.getPosition(), self.canvas.gettags(self.data["piece"]))
 
-			print self.position.isVulnerable(self.getPosition(), self.color)
+			#print self.position.isVulnerable(self.getPosition(), self.color)
 
 			if (self.position.originalPosition != self.getPosition()):
 				self.changeTurn()
