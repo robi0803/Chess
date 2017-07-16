@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 from globals import K
 
 
@@ -26,8 +26,7 @@ class SpecialMoves():
 
 			# promote
 			if ((tags[1] == "black" and pos2[1] == 7) or
-			(tags[1] == "white" and pos2[1] == 0)):
-
+				(tags[1] == "white" and pos2[1] == 0)):
 				unbind()
 				self.promote(pos2, piece, createPiece)
 
@@ -35,8 +34,9 @@ class SpecialMoves():
 			self.checkEnPassant(pos2)
 
 			if ((tags[1] == "black" and (pos1[1] == 1 and pos2[1] == 3)) or
-			(tags[1] == "white" and (pos1[1] == 6 and pos2[1] == 4))):
+				(tags[1] == "white" and (pos1[1] == 6 and pos2[1] == 4))):
 				self.markEnPassant(pos1, piece)
+
 			else:
 				self.enPassant = None
 
@@ -160,4 +160,4 @@ class SpecialMoves():
 	def checkEnPassant(self, pos):
 
 		if (pos == self.enPassant):
-			self.canvas.itemconfig(self.enPassantPiece, state = "hidden")		
+			self.canvas.itemconfig(self.enPassantPiece, state = "hidden")

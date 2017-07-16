@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 from globals import K
 
 
@@ -18,7 +18,7 @@ class Position():
 		self.originalPosition = None
 
 		# stores ( identifier : color : type ) for each space
-		self.board = [[ "none" for j in xrange(0, 8)] for i in xrange(0, 8) ]
+		self.board = [[ "none" for j in range(0, 8)] for i in range(0, 8) ]
 
 
 
@@ -58,7 +58,7 @@ class Position():
 	def getPosition(self, px, py):
 
 		x = y = None
-		for i in xrange(0, 8):
+		for i in range(0, 8):
 			if ((px <  (self.k.space * (i + 1) - 30)) and
 				(px >= (self.k.space) * i - 30) ):
 					x = i
@@ -252,11 +252,11 @@ class Position():
 				check = True
 
 			if (below and (right or left) and
-			self.board[pos2[0]][pos2[1]][1] == "white"):
+                            self.board[pos2[0]][pos2[1]][1] == "white"):
 				check = True
 
 			if (below and (right or left) and
-			self.specialMoves.enPassant == pos2):
+                            self.specialMoves.enPassant == pos2):
 				check = True
 
 			if (pos1[1] == 1 and pos2[1] - pos1[1] == 2 and inCol and empty):
@@ -269,12 +269,12 @@ class Position():
 				check = True
 
 			if (above and (right or left) and
-			(self.board[pos2[0]][pos2[1]][1] == "black") ):
+                            (self.board[pos2[0]][pos2[1]][1] == "black") ):
 				check = True
 
 			if (above and (right or left) and
-			self.specialMoves.enPassant == pos2):
-				check = True
+                            self.specialMoves.enPassant == pos2):
+			        check = True
 
 			if (pos1[1] == 6 and pos2[1] - pos1[1] == -2 and inCol and empty):
 				check = True
@@ -304,7 +304,7 @@ class Position():
 		check = False
 
 		if ((abs(pos2[1] - pos1[1]) == 2 and abs(pos2[0] - pos1[0]) == 1) or
-		(abs(pos2[0] - pos1[0]) == 2 and abs(pos2[1] - pos1[1]) == 1)):
+			(abs(pos2[0] - pos1[0]) == 2 and abs(pos2[1] - pos1[1]) == 1)):
 			check = True
 
 		return check
@@ -346,7 +346,7 @@ class Position():
 		check = False
 
 		if ((abs(pos2[0] - pos1[0]) == 1 or pos1[0] == pos2[0]) and
-		(abs(pos2[1] - pos1[1]) == 1 or pos1[1] == pos2[1])):
+			(abs(pos2[1] - pos1[1]) == 1 or pos1[1] == pos2[1])):
 			check = True
 
 		return check

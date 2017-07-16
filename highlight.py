@@ -3,40 +3,40 @@ from globals import K
 
 class Highlight():
 
-    def __init__(self, canvas, position):
+	def __init__(self, canvas, position):
 
-        self.k = K()
+		self.k = K()
 
-        self.canvas = canvas
+		self.canvas = canvas
 
-        self.position = position
+		self.position = position
 
 
 
-    def createBorder(self, pos, data):
+	def createBorder(self, pos, data):
 
-        self.findImages()
+		self.findImages()
 
-        canMove = self.position.canMove(self.canvas.gettags(data["piece"]),
-		   			  		            self.position.getPosition(data["px"],
-								      					          data["py"]))
+		canMove = self.position.canMove(self.canvas.gettags(data["piece"]),
+										self.position.getPosition(data["px"],
+																  data["py"]))
 
-        x = pos[0] * self.k.space
-        y = pos[1] * self.k.space
+		x = pos[0] * self.k.space
+		y = pos[1] * self.k.space
 
-        if (self.position.originalPosition == pos):
+		if (self.position.originalPosition == pos):
 			self.canvas.itemconfig(self.green, state = "hidden")
 			self.canvas.itemconfig(self.red, state = "hidden")
 			self.canvas.itemconfig(self.yellow, state = "normal")
 			self.canvas.coords(self.yellow, (x - 1, y - 1) )
 
-        elif (not canMove):
+		elif (not canMove):
 			self.canvas.itemconfig(self.green, state = "hidden")
 			self.canvas.itemconfig(self.red, state = "normal")
 			self.canvas.itemconfig(self.yellow, state = "hidden")
 			self.canvas.coords(self.red, (x - 1, y - 1) )
 
-        elif (canMove):
+		elif (canMove):
 			self.canvas.itemconfig(self.green, state = "normal")
 			self.canvas.itemconfig(self.yellow, state = "hidden")
 			self.canvas.itemconfig(self.red, state = "hidden")
@@ -44,7 +44,7 @@ class Highlight():
 
 
 
-    def clearBorder(self):
+	def clearBorder(self):
 
 		self.canvas.itemconfig(self.green, state = "hidden")
 		self.canvas.itemconfig(self.red, state = "hidden")
@@ -52,8 +52,8 @@ class Highlight():
 
 
 
-    def findImages(self):
+	def findImages(self):
 
-        self.green = self.canvas.find_withtag("green")
-        self.red = self.canvas.find_withtag("red")
-        self.yellow = self.canvas.find_withtag("yellow")
+		self.green = self.canvas.find_withtag("green")
+		self.red = self.canvas.find_withtag("red")
+		self.yellow = self.canvas.find_withtag("yellow")

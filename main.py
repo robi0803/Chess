@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 from graphics import Graphics
 from game import Game
 
