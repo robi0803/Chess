@@ -134,13 +134,11 @@ class Game():
 		'''
 
 		if (self.canMove()):
-
 			self.movement.snap(self.data)
 			self.position.capture(self.getPosition(), self.canvas.gettags(self.data["piece"]))
 
-			#print self.position.isVulnerable(self.getPosition(), self.color)
-
 			if (self.position.originalPosition != self.getPosition()):
+				self.position.updateMoved(self.data["piece"])
 				self.changeTurn()
 				self.checkSpecials()
 
@@ -148,6 +146,8 @@ class Game():
 			self.movement.reset(self.data)
 
 		self.interface.checkWin(self.unbind, self.restart)
+
+		self.position.rookMoved = False
 
 		self.highlight.clearBorder()
 
@@ -160,7 +160,7 @@ class Game():
 	def checkSpecials(self):
 
 		pos = self.getPosition()
-		self.specialMoves.filter(self.position.originalPosition, pos, self.unbind, self.createPiece)
+		self.specialMoves.pawns(self.position.originalPosition, pos, self.unbind, self.createPiece)
 
 
 
@@ -183,6 +183,7 @@ class Game():
 
 	def restart(self, event):
 
+		self.color = "token"
 		self.bind()
 		self.graphics.restart()
 
@@ -242,7 +243,8 @@ class Game():
 	def canMove(self):
 
 		return self.position.canMove(self.canvas.gettags(self.data["piece"]),
-		self.position.getPosition(self.data["px"], self.data["py"]))
+									 self.position.getPosition(self.data["px"],
+									 						   self.data["py"]))
 
 
 

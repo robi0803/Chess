@@ -107,18 +107,18 @@ class Graphics():
 
 
         # kings
-        self.canvas.create_image(self.k.space * 3, 0, image = self.BlackKingImage,
-                                 anchor = "nw", tags = ("token", "black", "king"))
+        self.canvas.create_image(4*self.k.space, 0, image = self.BlackKingImage,
+                                 anchor = "nw", tags = ("token", "black", "king", "blackKing"))
 
-        self.canvas.create_image(self.k.space*3, self.k.space*7, image = self.WhiteKingImage,
-                                 anchor = "nw", tags = ("token", "white", "king"))
+        self.canvas.create_image(4*self.k.space, self.k.space*7, image = self.WhiteKingImage,
+                                 anchor = "nw", tags = ("token", "white", "king", "whiteKing"))
 
 
         # knights
-        self.canvas.create_image(self.k.space, 0, image = self.BlackKnightImage,
+        self.canvas.create_image(1*self.k.space, 0, image = self.BlackKnightImage,
                                  anchor = "nw", tags = ("token", "black", "knight"))
 
-        self.canvas.create_image(6 * self.k.space, 0, image = self.BlackKnightImage,
+        self.canvas.create_image(6*self.k.space, 0, image = self.BlackKnightImage,
                                  anchor = "nw", tags = ("token", "black", "knight"))
 
         self.canvas.create_image(self.k.space, self.k.space * 7, image = self.WhiteKnightImage,
@@ -129,10 +129,10 @@ class Graphics():
 
 
         # queens
-        self.canvas.create_image(self.k.space * 4, 0, image = self.BlackQueenImage,
+        self.canvas.create_image(3*self.k.space, 0, image = self.BlackQueenImage,
                                  anchor = "nw", tags = ("token", "black", "queen"))
 
-        self.canvas.create_image(self.k.space * 4, self.k.space * 7, image = self.WhiteQueenImage,
+        self.canvas.create_image(3*self.k.space, self.k.space * 7, image = self.WhiteQueenImage,
                                  anchor = "nw", tags = ("token", "white", "queen"))
 
 
@@ -155,13 +155,13 @@ class Graphics():
                                  tags = ("token", "black", "rook"))
 
         self.canvas.create_image(self.k.space * 7, 0, image = self.BlackRookImage,
-                                 anchor = "nw", tags = ("token", "black", "rook"))
+                                 anchor = "nw", tags = ("token", "black", "rook", "castleBlack"))
 
         self.canvas.create_image(0, self.k.space * 7, image = self.WhiteRookImage,
                                  anchor = "nw", tags = ("token", "white", "rook"))
 
         self.canvas.create_image(self.k.space * 7, self.k.space * 7, image = self.WhiteRookImage,
-                                 anchor = "nw", tags = ("token", "white", "rook"))
+                                 anchor = "nw", tags = ("token", "white", "rook", "castleWhite"))
 
 
         # pawns

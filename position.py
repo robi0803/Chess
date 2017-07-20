@@ -1,7 +1,7 @@
 from tkinter import *
 from globals import K
 
-
+import copy
 
 class Position():
 
@@ -14,8 +14,14 @@ class Position():
 
 		self.specialMoves = specialMoves
 
-		#location of piece before moving
+		# location of piece before moving
 		self.originalPosition = None
+
+		# list of all piece moved
+		self.moved = []
+
+		self.rookMoved = False
+		self.specialMovesOn = True
 
 		# stores ( identifier : color : type ) for each space
 		self.board = [[ "none" for j in range(0, 8)] for i in range(0, 8) ]
@@ -252,11 +258,11 @@ class Position():
 				check = True
 
 			if (below and (right or left) and
-                            self.board[pos2[0]][pos2[1]][1] == "white"):
+							self.board[pos2[0]][pos2[1]][1] == "white"):
 				check = True
 
 			if (below and (right or left) and
-                            self.specialMoves.enPassant == pos2):
+							self.specialMoves.enPassant == pos2):
 				check = True
 
 			if (pos1[1] == 1 and pos2[1] - pos1[1] == 2 and inCol and empty):
@@ -269,12 +275,12 @@ class Position():
 				check = True
 
 			if (above and (right or left) and
-                            (self.board[pos2[0]][pos2[1]][1] == "black") ):
+							(self.board[pos2[0]][pos2[1]][1] == "black") ):
 				check = True
 
 			if (above and (right or left) and
-                            self.specialMoves.enPassant == pos2):
-			        check = True
+							self.specialMoves.enPassant == pos2):
+					check = True
 
 			if (pos1[1] == 6 and pos2[1] - pos1[1] == -2 and inCol and empty):
 				check = True
@@ -349,127 +355,163 @@ class Position():
 			(abs(pos2[1] - pos1[1]) == 1 or pos1[1] == pos2[1])):
 			check = True
 
+		if (self.canCastle(tags, pos2) and self.specialMovesOn):
+			check = True
+			self.castle(tags)
+		elif(self.rookMoved == True and self.specialMovesOn):
+			self.resetRook(tags)
+
+
 		return check
 
 
-	'''
+
+	def canCastle(self, tags, pos2):
+
+		check = True
+		color = tags[1]
+
+		if (color == "white"):
+
+			rook = self.canvas.find_withtag("castleWhite")
+			king = self.canvas.find_withtag("whiteKing")
+
+			# king or rook has moved
+			for piece in self.moved:
+				if (piece == king or piece == rook):
+					check = False
+
+			# moving to castle position
+			if (pos2 != (6,7)):
+				check = False
+
+			# king is in check
+			i = 4
+			while (check == True and i < 7):
+				check = not self.isVulnerable((i,7), color)
+				i += 1
+
+			# spaces are empty
+			i = 5
+			while (check == True and i < 7):
+				if (self.board[i][7] != "none"):
+					check = False
+				i += 1
+
+
+		if (color == "black"):
+
+			rook = self.canvas.find_withtag("castleBlack")
+			king = self.canvas.find_withtag("blackKing")
+
+			for piece in self.moved:
+				if (piece == king or piece == rook):
+					check = False
+
+			if (pos2 != (6,0)):
+				check = False
+
+			i = 4
+			while (check == True and i < 7):
+				check = not self.isVulnerable((i,0), color)
+				i += 1
+
+			i = 5
+			while (check == True and i < 7):
+				if (self.board[i][0] != "none"):
+					check = False
+				i += 1
+
+		return check
+
+
+
+	def castle(self, tags):
+
+		color = tags[1]
+
+		if (color == "white"):
+
+			rook = self.canvas.find_withtag("castleWhite")
+			coords = self.canvas.coords(rook)
+
+			if (self.getPosition(coords[0], coords[1]) != (5, 7)):
+				self.canvas.move(rook, -2 * self.k.space, 0)
+				self.rookMoved = True
+
+		if (color == "black"):
+
+			rook = self.canvas.find_withtag("castleBlack")
+			coords = self.canvas.coords(rook)
+
+			if (self.getPosition(coords[0], coords[1]) != (5, 0)):
+				self.canvas.move(rook, -2 * self.k.space, 0)
+				self.rookMoved = True
+
+
+
+	def resetRook(self, tags):
+
+		color = tags[1]
+		self.rookMoved = False
+
+		if (color == "white"):
+			rook = self.canvas.find_withtag("castleWhite")
+			self.canvas.move(rook, 2 * self.k.space, 0)
+
+		if (color == "black"):
+			rook = self.canvas.find_withtag("castleBlack")
+			self.canvas.move(rook, 2 * self.k.space, 0)
+
+
+
+	def updateMoved(self, piece):
+
+		self.moved.append(piece)
+
+
+
 	def isVulnerable(self, pos, color):
 
+		firstTurn = False
 		vulnerable = False
-		safe = False
-		x = pos[0]
-		y = pos[1]
 
 		if (color == "white"):
 			enemy = "black"
-		else:
+		elif (color == "black"):
 			enemy = "white"
+		else:
+			firstTurn = True
 
-		# rooks
-		while (not vulnerable and not safe and x > 0):
+		if (not firstTurn):
 
-			x -= 1
-			empty = len(self.board[x][y]) == 1
+			team = self.findTeam(enemy)
+			temp = self.originalPosition
+			self.specialMovesOn = False
 
-			if (self.board[x][y][1] == color and not empty):
-				safe = True
-			if (self.board[x][y][1] == enemy and (self.board[x][y][2] == "rook" or
-			self.board[x][y][2] == "queen") and not empty):
-				vulnerable = True
+			i = 0
+			while (not vulnerable and i < len(team)):
 
-		safe = False
-		x = pos[0]
+				self.originalPosition = (team[i][0], team[i][1])
+				vulnerable = self.canMove(team[i][2], (pos[0], pos[1]))
 
-		while (not vulnerable and not safe and x < 7):
+				i += 1
 
-			x += 1
-			empty = len(self.board[x][y]) == 1
+			self.originalPosition = temp
 
-			if (self.board[x][y][1] == color and not empty):
-				safe = True
-			if (self.board[x][y][1] == enemy and (self.board[x][y][2] == "rook" or
-			self.board[x][y][2] == "queen" and not empty)):
-				vulnerable = True
-
-		safe = False
-		x = pos[0]
-
-		while (not vulnerable and not safe and x > 0):
-
-			x -= 1
-			empty = len(self.board[x][y]) == 1
-
-			if (self.board[x][y][1] == color and not empty):
-				safe = True
-			if (self.board[x][y][1] == enemy and (self.board[x][y][2] == "rook" or
-			self.board[x][y][2] == "queen" and not empty)):
-				vulnerable = True
-
-		safe = False
-		y = pos[1]
-
-		while (not vulnerable and not safe and x < 7):
-
-			y += 1
-			empty = len(self.board[x][y]) == 1
-
-			if (self.board[x][y][1] == color and not empty):
-				safe = True
-			if (self.board[x][y][1] == enemy and (self.board[x][y][2] == "rook" or
-			self.board[x][y][2] == "queen" and not empty)):
-				vulnerable = True
-
-		# bishop
-		x = pos[0]
-		y = pos[1]
-
-		while (not vulnerable and not safe and x > 0 and y > 0):
-
-			x -= 1
-			y -= 1
-			empty = len(self.board[x][y]) == 1
-
-			if (self.board[x][y][1] == color and not empty):
-				safe = True
-			if (self.board[x][y][1] == enemy and (self.board[x][y][2] == "bishop" or
-			self.board[x][y][2] == "queen" and not empty)):
-				vulnerable = True
-
-		while (not vulnerable and not safe and x > 0 and y < 7):
-
-			x -= 1
-			y += 1
-			empty = len(self.board[x][y]) == 1
-
-			if (self.board[x][y][1] == color and not empty):
-				safe = True
-			if (self.board[x][y][1] == enemy and (self.board[x][y][2] == "bishop" or
-			self.board[x][y][2] == "queen" and not empty)):
-				vulnerable = True
-
-		while (not vulnerable and not safe and x < 7 and y > 0):
-
-			x += 1
-			y -= 0
-			empty = len(self.board[x][y]) == 1
-
-			if (self.board[x][y][1] == color and not empty):
-				safe = True
-			if (self.board[x][y][1] == enemy and self.board[x][y][2] == "rook" or
-			self.board[x][y][2] == "queen" and not empty):
-				vulnerable = True
-
-		while (not vulnerable and not safe and x < 7 and y > 0):
-
-			x += 1
-			y += 1
-			empty = len(self.board[x][y]) == 1
-
-			if (self.board[x][y][1] == color and not empty):
-				safe = True
-			if (self.board[x][y][1] == enemy and self.board[x][y][2] == "rook" or
-			self.board[x][y][2] == "queen" and not empty):
-				vulnerable = True
+		self.specialMovesOn = True
 
 		return vulnerable
-		'''
+
+
+
+	def findTeam(self, color):
+
+		team = []
+
+		for x in range(7):
+			for y in range(7):
+				if (len(self.board[x][y]) != 1 and self.board[x][y][1] == color):
+					team.append((x, y, self.board[x][y]))
+
+		return team

@@ -16,7 +16,7 @@ class SpecialMoves():
 
 
 
-	def filter(self, pos1, pos2, unbind, createPiece):
+	def pawns(self, pos1, pos2, unbind, createPiece):
 
 		piece = self.canvas.find_closest(pos2[0] * self.k.space, pos2[1] * self.k.space)
 		tags = self.canvas.gettags(piece)
