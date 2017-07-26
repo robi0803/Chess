@@ -28,7 +28,7 @@ class Position():
 
 
 
-	def update(self):
+	def updateBoard(self):
 
 		x = 0
 		for i in range(10, self.k.width + 10, self.k.space):
@@ -64,7 +64,7 @@ class Position():
 	def getPosition(self, px, py):
 
 		x = y = None
-		for i in range(0, 8):
+		for i in range(8):
 			if ((px <  (self.k.space * (i + 1) - 30)) and
 				(px >= (self.k.space) * i - 30) ):
 					x = i
@@ -84,9 +84,9 @@ class Position():
 
 		if (pos1 == pos2): check = True
 
-		elif (self.pathBlocked(pos2) ): check = False
+		elif (self.pathBlocked(pos2)): check = False
 
-		elif (self.occupied(tags, pos2) ): check = False
+		elif (self.occupied(tags, pos2)): check = False
 
 		elif (tags[2] == "pawn"):
 			check = self.pawn(tags, pos2)
@@ -129,7 +129,7 @@ class Position():
 
 		if (pos1[0] == pos2[0] or pos1[1] == pos2[1]):
 			check = self.rookPath(pos2)
-		if (abs(pos1[0] - pos2[0]) == abs(pos1[1] - pos2[1]) ):
+		if (abs(pos1[0] - pos2[0]) == abs(pos1[1] - pos2[1])):
 			check = self.bishopPath(pos2)
 
 		return check
@@ -275,11 +275,11 @@ class Position():
 				check = True
 
 			if (above and (right or left) and
-							(self.board[pos2[0]][pos2[1]][1] == "black") ):
+			   (self.board[pos2[0]][pos2[1]][1] == "black")):
 				check = True
 
 			if (above and (right or left) and
-							self.specialMoves.enPassant == pos2):
+				self.specialMoves.enPassant == pos2):
 					check = True
 
 			if (pos1[1] == 6 and pos2[1] - pos1[1] == -2 and inCol and empty):
@@ -296,7 +296,7 @@ class Position():
 		check = False
 
 		if ((pos1[0] == pos2[0] and pos1[1] != pos2[1]) or
-		(pos1[0] != pos2[0] and pos1[1] == pos2[1])):
+			(pos1[0] != pos2[0] and pos1[1] == pos2[1])):
 			check = True;
 
 		return check
@@ -484,7 +484,6 @@ class Position():
 			firstTurn = True
 
 		if (not firstTurn):
-
 			team = self.findTeam(enemy)
 			temp = self.originalPosition
 			self.specialMovesOn = False
@@ -493,12 +492,21 @@ class Position():
 			while (not vulnerable and i < len(team)):
 
 				self.originalPosition = (team[i][0], team[i][1])
-				vulnerable = self.canMove(team[i][2], (pos[0], pos[1]))
+				tags = team[i][2]
+
+				if (self.canMove(tags, (pos[0], pos[1]))):
+					vulnerable = True
+
+				if (tags[2] == "pawn" and self.originalPosition[0] - pos[0] == 0 and
+				   (abs(self.originalPosition[1]) - pos[1] == 1 or
+					abs(self.originalPosition[1] - pos[1] == 2))):
+					vulnerable = False
+
+				if (self.originalPosition == pos):
+					vulnerable = False
 
 				i += 1
-
 			self.originalPosition = temp
-
 		self.specialMovesOn = True
 
 		return vulnerable
@@ -509,8 +517,8 @@ class Position():
 
 		team = []
 
-		for x in range(7):
-			for y in range(7):
+		for x in range(8):
+			for y in range(8):
 				if (len(self.board[x][y]) != 1 and self.board[x][y][1] == color):
 					team.append((x, y, self.board[x][y]))
 

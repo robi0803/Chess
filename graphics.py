@@ -174,93 +174,164 @@ class Graphics():
                                      anchor = "nw", tags = ("token", "white", "pawn"))
 
 
-        # menu background
+        # main menu
         self.rec = self.canvas.create_rectangle(0, 0, self.k.width, self.k.height,
-        fill = "black", state = "hidden", stipple = "gray75", tags = "bg")
+                                                fill = "black", stipple = "gray25",
+                                                state = "hidden", tags = "mainBg", )
 
+        self.canvas.create_text(self.k.width/2, self.k.height/4, text = "Chess",
+                                fill = "white", font = ("Times", 40), state = "hidden",
+                                tags = "titleText")
 
-        # resume button
-        self.canvas.create_text(self.k.width / 2, self.k.height / 3, text = "Resume",
+        self.canvas.create_rectangle(2 * self.k.space, 3 * self.k.space, 6 * self.k.space,
+                                     3.7 * self.k.space, fill = "black", activefill = "gray",
+                                     state = "hidden", tags = "mainSingleBg")
+
+        self.canvas.create_rectangle(2 * self.k.space, 4.35 * self.k.space, 6 * self.k.space,
+                                     5.05 * self.k.space, fill = "black", activefill = "gray",
+                                     state = "hidden",  tags = "mainMultiBg")
+
+        self.canvas.create_rectangle(2 * self.k.space, 5.7 * self.k.space, 6 * self.k.space,
+                                     6.35 * self.k.space, fill = "black", activefill = "gray",
+                                     state = "hidden", tags = "mainQuitBg",)
+
+        self.canvas.create_text(self.k.width / 2, 3.35 * self.k.space, text = "Single-Player",
                                 fill = "white", font = ("system", 20), state = "hidden",
-                                tags = "resumeText")
+                                tags = "mainSingleText")
 
-        self.canvas.create_rectangle(3 * self.k.space,  # origin x
-        2.3 * self.k.space,                             # origin y
-        5 * self.k.space,                               # destination x
-        3 * self.k.space,                               # destination y
-        fill = "black", activefill = "gray", tags = "resumeBg", state = "hidden")
-
-
-        # restart button
-        self.canvas.create_text(self.k.width / 2, self.k.height / 2, text = "Restart",
+        self.canvas.create_text(self.k.width / 2, 4.7 * self.k.space, text = "Multi-Player",
                                 fill = "white", font = ("system", 20), state = "hidden",
-                                tags = "restartText")
+                                tags = "mainMutliText")
 
-        self.canvas.create_rectangle(3 * self.k.space, 3.65 * self.k.space, 5 * self.k.space,
-                                     4.35 * self.k.space, fill = "black", activefill = "gray",
-                                     tags = "restartBg", state = "hidden")
+        self.canvas.create_text(self.k.width / 2, 6.05 * self.k.space, text = "Quit",
+                                fill = "white", font = ("system", 20), state = "hidden",
+                                tags = "mainQuitText")
 
 
-        # quit button
-        self.canvas.create_text(self.k.width / 2, 2 * self.k.height / 3, text = "Quit",
-                                fill = "white", font = ("system", 20), state = "hidden", tags = "quitText")
+        # in-game menu
+        self.rec = self.canvas.create_rectangle(0, 0, self.k.width, self.k.height,
+                                                fill = "black", state = "hidden",
+                                                stipple = "gray75", tags = "menuBg")
 
-        self.canvas.create_rectangle(3 * self.k.space, 5 * self.k.space, 5 * self.k.space,
-                                     5.7 * self.k.space, fill = "black", activefill = "gray", tags = "quitBg",
-                                     state = "hidden")
+        self.canvas.create_text(self.k.width/2, 1.85*self.k.space, text = "Resume",
+                                fill = "white", font = ("system", 20), state = "hidden",
+                                tags = "menuResumeText")
+
+        self.canvas.create_rectangle(2.5*self.k.space,    # origin x
+                                     1.5*self.k.space,  # origin y
+                                     5.5*self.k.space,    # destination x
+                                     2.2*self.k.space,    # destination y
+                                     fill = "black", activefill = "gray", state = "hidden",
+                                     tags = "menuResumeBg")
+
+        self.canvas.create_text(self.k.width/2, 3.2*self.k.space, text = "Restart",
+                                fill = "white", font = ("system", 20), state = "hidden",
+                                tags = "menuRestartText")
+
+        self.canvas.create_rectangle(2.5*self.k.space, 2.85*self.k.space, 5.5*self.k.space,
+                                     3.55*self.k.space, fill = "black", activefill = "gray",
+                                     state = "hidden", tags = "menuRestartBg")
+
+        self.canvas.create_text(self.k.width/2, 4.55*self.k.space, text = "Main Menu",
+                                fill = "white", font = ("system", 20), state = "hidden",
+                                tags = "menuMainText")
+
+        self.canvas.create_rectangle(2.5*self.k.space, 4.2*self.k.space, 5.5*self.k.space,
+                                     4.9*self.k.space, fill = "black", activefill = "gray",
+                                     tags = "menuMainBg", state = "hidden")
+
+        self.canvas.create_text(self.k.width/2, 5.9*self.k.space, text = "Quit",
+                                fill = "white", font = ("system", 20), state = "hidden",
+                                tags = "menuQuitText")
+
+        self.canvas.create_rectangle(2.5*self.k.space, 5.55*self.k.space, 5.5*self.k.space,
+                                     6.25*self.k.space, fill = "black", activefill = "gray",
+                                     state = "hidden", tags = "menuQuitBg",)
 
 
         # win menu
-        self.canvas.create_rectangle(self.k.space, self.k.space, 7 * self.k.space,
-                                     7 * self.k.space, fill = "gray", tags = "winBg", state = "hidden")
+        self.canvas.create_rectangle(self.k.space, self.k.space, 7*self.k.space,
+                                     7*self.k.space, fill = "gray", state = "hidden",
+                                     tags = "winBg")
 
-        self.canvas.create_text(self.k.width / 2, self.k.height / 3, text = "White Wins!",
-                                fill = "white", font = ("system", 20), state = "hidden", tags = "whtWin")
+        self.canvas.create_text(self.k.width/2, 2.2*self.k.space, text = "White Wins!",
+                                fill = "white", font = ("system", 20), state = "hidden",
+                                tags = "whtWin")
 
-        self.canvas.create_text(self.k.width / 2, self.k.height / 3,text = "Black Wins!", fill = "white",
-                                font = ("system", 20), state = "hidden", tags = "blkWin")
+        self.canvas.create_text(self.k.width/2, 2.2*self.k.space, text = "Black Wins!",
+                                fill = "white", font = ("system", 20), state = "hidden",
+                                tags = "blkWin")
+
+        self.canvas.create_text(self.k.width/2, 3.4*self.k.space, text = "Restart",
+                                fill = "white", font = ("system", 20), state = "hidden",
+                                tags = "winRestartText")
+
+        self.canvas.create_rectangle(2.5*self.k.space, 3.05*self.k.space, 5.5*self.k.space,
+                                     3.75*self.k.space, fill = "black", activefill = "gray",
+                                     state = "hidden", tags = "winRestartBg")
+
+        self.canvas.create_text(self.k.width/2, 4.55*self.k.space, text = "Main Menu",
+                                fill = "white", font = ("system", 20), state = "hidden",
+                                tags = "winMainText")
+
+        self.canvas.create_rectangle(2.5*self.k.space, 4.2*self.k.space, 5.5*self.k.space,
+                                     4.9*self.k.space, fill = "black", activefill = "gray",
+                                     state = "hidden", tags = "winMainBg")
+
+        self.canvas.create_text(self.k.width/2, 5.7*self.k.space, text = "Quit",
+                                fill = "white", font = ("system", 20), state = "hidden",
+                                tags = "winQuitText")
+
+        self.canvas.create_rectangle(2.5*self.k.space, 5.35*self.k.space, 5.5*self.k.space,
+                                     6.05*self.k.space, fill = "black", activefill = "gray",
+                                     state = "hidden", tags = "winQuitBg")
 
 
         # promotion menu background
-        self.canvas.create_text(self.k.width / 2, self.k.height / 3, text = "Choose Promotion", fill = "black",
-                                font = ("system", 20), state = "hidden", tags = "promotionText")
+        self.canvas.create_text(self.k.width / 2, self.k.height / 3, text = "Choose Promotion",
+                                fill = "black", font = ("system", 20), state = "hidden",
+                                tags = "promotionText")
 
-        self.canvas.create_rectangle(2*self.k.space, 4*self.k.space, 3*self.k.space,5*self.k.space, fill = "gray",
-                                     activefill = "white", tags = ("prom", "rookRec"), state = "hidden")
+        self.canvas.create_rectangle(2*self.k.space, 4*self.k.space, 3*self.k.space,5*self.k.space,
+                                     fill = "gray", activefill = "white", tags = ("prom", "rookRec"),
+                                     state = "hidden")
 
-        self.canvas.create_rectangle(3*self.k.space, 4*self.k.space, 4*self.k.space, 5*self.k.space, fill = "gray",
-                                     activefill = "white", tags = ("prom", "bishopRec"), state = "hidden")
+        self.canvas.create_rectangle(3*self.k.space, 4*self.k.space, 4*self.k.space, 5*self.k.space,
+                                     fill = "gray", activefill = "white", tags = ("prom", "bishopRec"),
+                                     state = "hidden")
 
-        self.canvas.create_rectangle(4*self.k.space, 4*self.k.space, 5*self.k.space, 5*self.k.space, fill = "gray",
-                                     activefill = "white", tags = ("prom", "queenRec"), state = "hidden")
+        self.canvas.create_rectangle(4*self.k.space, 4*self.k.space, 5*self.k.space, 5*self.k.space,
+                                     fill = "gray", activefill = "white", tags = ("prom", "queenRec"),
+                                     state = "hidden")
 
-        self.canvas.create_rectangle(5*self.k.space, 4*self.k.space, 6*self.k.space, 5*self.k.space, fill = "gray",
-                                     activefill = "white", tags = ("prom", "knightRec"), state = "hidden")
+        self.canvas.create_rectangle(5*self.k.space, 4*self.k.space, 6*self.k.space, 5*self.k.space,
+                                     fill = "gray", activefill = "white", tags = ("prom", "knightRec"),
+                                     state = "hidden")
 
 
         # black promotion menu pieces
-        self.canvas.create_image(2*self.k.space, 4*self.k.space, image = self.BlackRookImage, anchor = "nw",
-                                 tags = "blkRook", state = "hidden")
+        self.canvas.create_image(2*self.k.space, 4*self.k.space, image = self.BlackRookImage,
+                                 anchor = "nw", tags = "blkRook", state = "hidden")
 
-        self.canvas.create_image(3*self.k.space, 4*self.k.space, image = self.BlackBishopImage, anchor = "nw",
-                                 tags = "blkBishop", state = "hidden")
+        self.canvas.create_image(3*self.k.space, 4*self.k.space, image = self.BlackBishopImage,
+                                 anchor = "nw", tags = "blkBishop", state = "hidden")
 
-        self.canvas.create_image(4*self.k.space, 4*self.k.space, image = self.BlackQueenImage, anchor = "nw",
-                                 tags = "blkQueen", state = "hidden")
+        self.canvas.create_image(4*self.k.space, 4*self.k.space, image = self.BlackQueenImage,
+                                 anchor = "nw", tags = "blkQueen", state = "hidden")
 
-        self.canvas.create_image(5*self.k.space, 4*self.k.space, image = self.BlackKnightImage, anchor = "nw",
-                                 tags = "blkKnight", state = "hidden")
+        self.canvas.create_image(5*self.k.space, 4*self.k.space, image = self.BlackKnightImage,
+                                 anchor = "nw", tags = "blkKnight", state = "hidden")
 
 
         # white promotion menu pieces
-        self.canvas.create_image(2*self.k.space, 4*self.k.space, image = self.WhiteRookImage, anchor = "nw",
-                                 tags = "whtRook", state = "hidden")
+        self.canvas.create_image(2*self.k.space, 4*self.k.space, image = self.WhiteRookImage,
+                                 anchor = "nw", tags = "whtRook", state = "hidden")
 
         self.canvas.create_image(3*self.k.space, 4*self.k.space, image = self.WhiteBishopImage,
                                  anchor = "nw", tags = "whtBishop", state = "hidden")
 
-        self.canvas.create_image(4*self.k.space, 4*self.k.space, image = self.WhiteQueenImage, anchor = "nw",
-                                 tags = "whtQueen", state = "hidden")
+        self.canvas.create_image(4*self.k.space, 4*self.k.space, image = self.WhiteQueenImage,
+                                 anchor = "nw", tags = "whtQueen", state = "hidden")
 
-        self.canvas.create_image(5*self.k.space, 4*self.k.space, image = self.WhiteKnightImage, anchor = "nw",
-                                 tags = "whtKnight", state = "hidden")
+        self.canvas.create_image(5*self.k.space, 4*self.k.space, image = self.WhiteKnightImage,
+                                 anchor = "nw", tags = "whtKnight", state = "hidden")

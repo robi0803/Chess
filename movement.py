@@ -45,7 +45,7 @@ class Movement():
         dx = self.k.space * pos[0] - data["px"]
         dy = self.k.space * pos[1] - data["py"]
 
-        self.move(dx, dy, data)
+        self.move(data, dx, dy)
 
 
 
@@ -54,7 +54,7 @@ class Movement():
         dx = self.k.space * self.position.originalPosition[0] - data["px"]
         dy = self.k.space * self.position.originalPosition[1] - data["py"]
 
-        self.move(dx, dy, data)
+        self.move(data, dx, dy)
 
 
 
@@ -71,10 +71,10 @@ class Movement():
         if (data["py"] > self.k.height - 30):
             dy = -10
 
-        self.move(dx, dy, data)
+        self.move(data, dx, dy)
 
 
 
-    def move(self, dx, dy, data):
+    def move(self, data, dx, dy):
 
        self.canvas.move(data["piece"], dx, dy)
