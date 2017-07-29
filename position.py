@@ -84,6 +84,9 @@ class Position():
 
 		if (pos1 == pos2): check = True
 
+		elif (tags[2] == "king"):
+			check = self.king(tags, pos2)
+
 		elif (self.pathBlocked(pos2)): check = False
 
 		elif (self.occupied(tags, pos2)): check = False
@@ -102,9 +105,6 @@ class Position():
 
 		elif (tags[2] == "queen"):
 			check = self.queen(tags, pos2)
-
-		elif (tags[2] == "king"):
-			check = self.king(tags, pos2)
 
 		return check
 
@@ -358,9 +358,8 @@ class Position():
 		if (self.canCastle(tags, pos2) and self.specialMovesOn):
 			check = True
 			self.castle(tags)
-		elif(self.rookMoved == True and self.specialMovesOn):
+		elif (self.rookMoved == True and self.specialMovesOn):
 			self.resetRook(tags)
-
 
 		return check
 
@@ -397,7 +396,6 @@ class Position():
 				if (self.board[i][7] != "none"):
 					check = False
 				i += 1
-
 
 		if (color == "black"):
 
@@ -507,7 +505,7 @@ class Position():
 
 				i += 1
 			self.originalPosition = temp
-		self.specialMovesOn = True
+			self.specialMovesOn = True
 
 		return vulnerable
 

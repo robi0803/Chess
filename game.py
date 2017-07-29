@@ -59,7 +59,6 @@ class Game():
 
 
 	def mouseClick(self, event):
-
 		'''
 		Called when a user generated mouse click event occurs.
 
@@ -68,8 +67,8 @@ class Game():
 				   event and is called when this event occurs.
 
 		@post
-			movementData and originalPosition are initialized to the piece closest
-			to the mouse click event
+			data and originalPosition are initialized to the piece closest
+			to the mouse click event.
 		'''
 
 		self.data["piece"] = self.findClosest(event)
@@ -77,8 +76,6 @@ class Game():
 		self.data["my"] = event.y
 
 		self.canvas.lift(self.data["piece"])
-
-		#self.position.update()
 
 		self.updateCoords()
 
@@ -89,7 +86,6 @@ class Game():
 
 
 	def mouseMove(self, event):
-
 		'''
 		Called when a user generated mouse movement event occurs. Does nothing
 		unless data members have been initialized by mouseClick
@@ -117,10 +113,9 @@ class Game():
 
 
 	def mouseRelease(self, event):
-
 		'''
-		Called when a user generated mouse release event occurs. Places piece if in a
-		legal position and clears data members.
+		Called when a user generated mouse release event occurs. Places piece and
+		clears data members.
 
 		@param
 			event:
@@ -129,7 +124,7 @@ class Game():
 
 		@post
 			If in a legal position, piece is moved to the center of the tile and the
-			game updates. Else	piece is moved to original position. Variables are reset.
+			game updates. Else,	piece is moved to original position. Variables are reset.
 		'''
 
 		if (self.canMove()):
@@ -151,13 +146,21 @@ class Game():
 
 
 	def updateGame(self):
+		'''
+		Called during mouseRelease. Updates game and changes turn.
+
+		@post
+			Captured pieces, pieces that have been moved, and the board have all
+			been updated. Special moves and a winner have both been checked for.
+			If multiplayer game, the game changes turn. Else, the computer takes its
+			turn.
+		'''
 
 		self.position.capture(self.getPosition(), self.canvas.gettags(self.data["piece"]))
 		self.checkSpecials()
 		self.position.updateMoved(self.data["piece"])
 		self.position.updateBoard()
 		self.checkWin()
-
 
 		if (self.multiPlayer):
 			self.changeTurn()
@@ -168,17 +171,35 @@ class Game():
 				self.setColor()
 				self.bind()
 
-			self.cpu.takeTurn(self.checkWin)
+			self.cpu.takeTurn(self.checkWin, self.graphics.createNewPiece)
 
 
 
 	def checkWin(self):
+		'''
+		@post
+			interface.checkWin() has been called
+		'''
 
 		self.interface.checkWin(self.unbind, self.disableMenu, self.restart, self.showMain)
 
 
 
 	def findClosest(self, event):
+		'''
+		Prevents user from grabbing board. Four more locations are attempted.
+		if canvas.find_closest() doesn't return a piece.
+
+		@param
+			event:
+				Tkinter event. event.x and event.y correspond to the location of
+				the mouse click event. The origin is the top left corner and
+				+x is right and +y is down.
+
+		@return
+			piece:
+				The identifier of the piece.
+		'''
 
 		piece = self.canvas.find_closest(event.x, event.y)
 		tags = self.canvas.gettags(piece)
@@ -213,6 +234,10 @@ class Game():
 
 
 	def checkSpecials(self):
+		'''
+		@post
+			specialMoves.pawns() is called. Checks for promotion / en passant.
+		'''
 
 		pos = self.getPosition()
 		self.specialMoves.pawns(self.position.originalPosition, pos, self.unbind, self.createPiece)
@@ -220,6 +245,18 @@ class Game():
 
 
 	def createPiece(self, event):
+		'''
+		Used when promoting a pawn. Function is binded with mouseClick event
+		in specialmoves.promote()
+
+		@param
+			event:
+				Tkinter event. Used to find which piece user clicked on.
+
+		@post
+			A new piece is created, The promotion menu is hidden, and the pieces are
+			rebound.
+		'''
 
 		piece = self.canvas.find_closest(event.x, event.y)
 		tags = self.canvas.gettags(piece)
@@ -230,6 +267,14 @@ class Game():
 
 
 	def showMenu(self, event):
+		'''
+		@param
+			event:
+				Tkinter event, needed for interace.menu().
+
+		@post
+			Bindings are removed from pieces and in-game menu is brought up.
+		'''
 
 		self.unbind()
 		self.interface.menu(event, self.bind, self.showMenu, self.restart, self.showMain)
@@ -237,18 +282,41 @@ class Game():
 
 
 	def showMain(self, event):
+		'''
+		Brings up main menu.
+
+		@param
+			event:
+				Tkinter event, needed to bind function.
+
+		@post
+			Game is reset, main menu is displayed.
+
+		'''
 
 		self.singlePlayer = False
 		self.multiPlayer = False
+		self.color = "token"
 		self.unbind()
 		self.disableMenu()
-		self.color = "token"
 		self.graphics.restart()
+		self.position.updateBoard()
 		self.interface.mainMenu(self.setSinglePlayer, self.setMultiPlayer)
 
 
 
 	def setSinglePlayer(self, event):
+		'''
+		Called from interface.mainMenu(). Sets up single player game.
+
+		@param
+			event:
+				Tkinter event, needed to bind functions
+
+		@post
+			Variables for single player game are set, main menu is hidden, pieces
+			are rebound, and in-game menu are enabled.
+		'''
 
 		self.singlePlayer = True
 		self.multiPlayer = False
@@ -259,25 +327,53 @@ class Game():
 
 
 	def setMultiPlayer(self, event):
+		'''
+		Called from interface.mainMenu(). Sets up multi player game.
+
+		@param
+			event:
+				Tkinter event, needed to bind functions
+
+		@post
+			Variables for mutli player game are set, main menu is hidden, pieces
+			are rebound, and in-game menu are enabled.
+		'''
 
 		self.multiPlayer = True
 		self.singlePlayer = False
 		self.interface.hideMain()
 		self.bind()
-		self.root.bind('<Escape>', self.showMenu)
+		self.enableMenu()
 
 
 
 	def restart(self, event):
+		'''
+		Called from interface.menu(). Restarts game.
+
+		@param
+			event:
+				Tkinter event, needed to bind functions
+
+		@post
+			Variables and board are reset.
+		'''
 
 		self.color = "token"
 		self.bind()
 		self.enableMenu()
 		self.graphics.restart()
+		self.position.updateBoard()
 
 
 
 	def changeTurn(self):
+		'''
+		Changes turn for multi player game.
+
+		@post
+			Pieces are bound to other players color.
+		'''
 
 		self.unbind()
 		self.changeColor()
@@ -286,18 +382,30 @@ class Game():
 
 
 	def disableMenu(self):
+		'''
+		@post
+			In-game menu can no longer appear.
+		'''
 
 		self.root.unbind('<Escape>')
 
 
 
 	def enableMenu(self):
+		'''
+		@post
+			In-game menu can appear.
+		'''
 
 		self.root.bind('<Escape>', self.showMenu)
 
 
 
 	def unbind(self):
+		'''
+		@post
+			Pieces of current color are unbound.
+		'''
 
 		self.canvas.tag_unbind(self.color, "<ButtonPress-1>")
 		self.canvas.tag_unbind(self.color, "<B1-Motion>")
@@ -306,6 +414,10 @@ class Game():
 
 
 	def bind(self):
+		'''
+		@post
+			Pieces of current color are bound.
+		'''
 
 		self.canvas.tag_bind(self.color, "<ButtonPress-1>", self.mouseClick)
 		self.canvas.tag_bind(self.color, "<B1-Motion>", self.mouseMove)
@@ -314,18 +426,28 @@ class Game():
 
 
 	def setColor(self):
+		'''
+		@post
+			Sets color based off of current piece. If multi player game, also sets
+			cpu color.
+		'''
 
 		tags = self.canvas.gettags(self.data["piece"])
 		self.color = tags[1]
 
-		if (self.color == "white"):
-			self.cpu.color = "black"
-		else:
-			self.cpu.color = "white"
+		if (self.multiPlayer):
+			if (self.color == "white"):
+				self.cpu.color = "black"
+			else:
+				self.cpu.color = "white"
 
 
 
 	def changeColor(self):
+		'''
+		@post
+			Changes color to opposing team.
+		'''
 
 		if (self.color == "token"):
 			self.setColor()
@@ -338,6 +460,11 @@ class Game():
 
 
 	def updateCoords(self):
+		'''
+		@post
+			The current coordinates of the image are updated. origin - topleft,
+			+x - right, +y - down.
+		'''
 
 		coords = self.canvas.coords(self.data["piece"])
 		self.data["px"] = coords[0]
@@ -346,6 +473,11 @@ class Game():
 
 
 	def canMove(self):
+		'''
+		@post
+			position.canMove() is called. Checks if current piece can move to it's
+			current location.
+		'''
 
 		return self.position.canMove(self.canvas.gettags(self.data["piece"]),
 									 self.position.getPosition(self.data["px"],
@@ -354,5 +486,10 @@ class Game():
 
 
 	def getPosition(self):
+		'''
+		@return
+			position.getPosition(), current board position. origin - topleft,
+			+x - right(0-7), +y - down(0-7).
+		'''
 
 		return self.position.getPosition(self.data["px"], self.data["py"])

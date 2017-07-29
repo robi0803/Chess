@@ -18,19 +18,26 @@ class CPU():
 
 
 
-	def takeTurn(self, checkWin):
+	def takeTurn(self, checkWin, createNewPiece):
 
 		temp = self.position.originalPosition
 
 		move = self.getMove()
 		self.movePiece(move)
 
+		if (move[0][2] == "pawn"): self.checkPromotion(move[0][0], move[1], createNewPiece)
+
 		self.position.capture(move[1], move[0])
 		self.position.updateMoved(move[0][0])
 		self.position.updateBoard()
+
 		checkWin()
 
 		self.position.originalPosition = temp
+
+
+
+
 
 
 
@@ -64,25 +71,29 @@ class CPU():
 									 (x, y),                    # new position
 									 (piece[0], piece[1])))     # original position
 
+		tiedMoves = []
+		temp = best = self.getStats(moves[0], team)
 
-		temp = best = self.getStats(moves[0])
-		bestMove = moves[0]
 		for move in moves:
-			temp = self.getStats(move)
+			temp = self.getStats(move, team)
 			if (temp > best):
 				best = temp
-				bestMove = move
+				tiedMoves = []
+				tiedMoves.append(move)
 
-		return bestMove
+			elif (temp == best):
+				tiedMoves.append(move)
+
+		random.seed()
+		return tiedMoves[ random.randint(0, len(tiedMoves) - 1) ]
 
 
 
-	def getStats(self, move):
+	def getStats(self, move, team):
 
-		tags = move[0]
+		stats = 0
 		newPos = move[1]
 		curPos = move[2]
-
 
 		if (self.color == "white"):
 			enemy = "black"
@@ -90,80 +101,83 @@ class CPU():
 			enemy = "white"
 
 
-		stats = 0
+		# if (curPos is vulnerable)
+		for piece in team:
+			tags = piece[2]
+			if (self.position.isVulnerable((piece[0], piece[1]), self.color)):
+				stats += self.filter(tags)
 
-		if (self.position.isVulnerable(curPos, self.color) and
-			not self.position.isVulnerable(newPos, self.color)):
 
-			if (tags[2] == "pawn"):
-				stats += 10
+		# if (newPos is vulnerable)
+		self.position.board[newPos[0]][newPos[1]] = self.position.board[curPos[0]][curPos[1]]
+		self.position.board[curPos[0]][curPos[1]] = "none"
+		team = self.position.findTeam(self.color)
 
-			elif (tags[2] == "rook"):
-				stats += 30
+		for piece in team:
+			tags = piece[2]
+			if (self.position.isVulnerable((piece[0], piece[1]), self.color)):
+				stats -= self.filter(tags)
 
-			elif (tags[2] == "knight"):
-				stats += 30
-
-			elif (tags[2] == "bishop"):
-				stats += 30
-
-			elif (tags[2] == "queen"):
-				stats += 50
-
-			elif (tags[2] == "king"):
-				stats += 90
-
-		if (self.position.isVulnerable(newPos, self.color)):
-
-			if (tags[2] == "pawn"):
-				stats -= 10
-
-			elif (tags[2] == "rook"):
-				stats -= 30
-
-			elif (tags[2] == "knight"):
-				stats -= 30
-
-			elif (tags[2] == "bishop"):
-				stats -= 30
-
-			elif (tags[2] == "queen"):
-				stats -= 50
-
-			elif (tags[2] == "king"):
-				stats -= 70
+		self.position.updateBoard()
 
 
 		# if (can capture)
 		if (enemy == self.position.board[newPos[0]][newPos[1]][1]):
-
+			tags = move[0]
 			enemyClass = self.position.board[newPos[0]][newPos[1]][2]
-
-			if (enemyClass == "pawn"):
-				stats += 10
-
-			elif (enemyClass == "rook"):
-				stats += 30
-
-			elif (enemyClass == "knight"):
-				stats += 30
-
-			elif (enemyClass == "bishop"):
-				stats += 30
-
-			elif (enemyClass == "queen"):
-				stats += 50
-
-			elif (enemyClass == "king"):
-				stats += 100
-
+			stats += self.capture(enemyClass)
+			stats -= (1/4)*self.filter(tags)
 
 		return stats
 
 
 
-	def randomMove(self, moves):
+	def filter(self, tags):
 
-		random.seed()
+		if (tags[2] == "pawn"):
+			stats = 25
+		elif (tags[2] == "rook"):
+			stats = 50
+		elif (tags[2] == "knight"):
+			stats = 50
+		elif (tags[2] == "bishop"):
+			stats = 50
+		elif (tags[2] == "queen"):
+			stats = 100
+		elif (tags[2] == "king"):
+			stats = 500
 
-		return moves[ random.randint(0, len(moves) - 1) ]
+		return stats
+
+
+
+	def capture(self, enemyClass):
+
+		if (enemyClass == "pawn"):
+			stats = 25
+		elif (enemyClass == "rook"):
+			stats = 50
+		elif (enemyClass == "knight"):
+			stats = 50
+		elif (enemyClass == "bishop"):
+			stats = 50
+		elif (enemyClass == "queen"):
+			stats = 100
+		elif (enemyClass == "king"):
+			stats = 1000
+
+		return stats
+
+
+
+	def checkPromotion(self, piece, pos, createNewPiece):
+
+		if (self.color == "black" and pos[1] == 7):
+			self.canvas.delete(piece)
+			tags = ["blkQueen"]
+			createNewPiece(tags, pos)
+
+		elif (self.color == "white" and pos[1] == 0):
+			self.canvas.delete(piece)
+			tags = ["whtQueen"]
+			createNewPiece(tags, pos)
