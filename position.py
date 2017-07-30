@@ -29,6 +29,10 @@ class Position():
 
 
 	def updateBoard(self):
+		'''
+		@post
+			board contians the position of every piece.
+		'''
 
 		x = 0
 		for i in range(10, self.k.width + 10, self.k.space):
@@ -48,20 +52,17 @@ class Position():
 
 
 
-	def capture(self, pos, tags):
-
-		x = pos[0]
-		y = pos[1]
-
-		#if there is a piece and it is a different color
-		if (len(self.board[x][y]) > 1 and
-		   (self.board[x][y][1] != tags[1]) ):
-
-			self.canvas.itemconfig(self.board[x][y][0], state = "hidden")
-
-
-
 	def getPosition(self, px, py):
+		'''
+		Returns board(8x8) coordinates given image(472x472) coordinates.
+
+		@param
+			px: x coordinate of piece position
+			py: y coordinate of piece position
+
+		@return
+			A tuple containing the board coordinates is returned.
+		'''
 
 		x = y = None
 		for i in range(8):
@@ -76,18 +77,84 @@ class Position():
 
 
 
+	def capture(self, pos, tags):
+		'''
+		Hides enemy piece.
+
+		@param
+			pos:  position of space to check
+			tags: tags of attacking piece
+
+		@post
+			If there is an enemy piece at pos, the enemy piece is hidden.
+		'''
+
+		x = pos[0]
+		y = pos[1]
+
+		#if there is a piece and it is a different color
+		if (len(self.board[x][y]) > 1 and
+		   (self.board[x][y][1] != tags[1]) ):
+
+			self.canvas.itemconfig(self.board[x][y][0], state = "hidden")
+
+
+
+	def findTeam(self, color):
+		'''
+		@param
+			color: the color of the team to findClosest
+
+		@return
+			A list containg all pieces of the team is returned.
+			( x-coordinate, y-coordinate, (identifier, color, type) )
+		'''
+
+		team = []
+
+		for x in range(8):
+			for y in range(8):
+				if (len(self.board[x][y]) != 1 and self.board[x][y][1] == color):
+					team.append((x, y, self.board[x][y]))
+
+		return team
+
+
+
+	def updateMoved(self, piece):
+		'''
+		@param
+		 	piece: the piece that has been moved
+
+		@post
+			The list of pieces that have been moved is updated.
+		'''
+
+		self.moved.append(piece)
+
+
+
 	def canMove(self, tags, pos2):
+		'''
+		Checks if a given piece can move to a given position. Also handles castling.
+
+		@param
+			tags: tags of piece to check
+			pos2: position piece is moving to
+
+		@return
+			True if can move, else False.
+		'''
 
 		pos1 = self.originalPosition
-
 		check = False
 
 		if (pos1 == pos2): check = True
 
-		elif (tags[2] == "king"):
+		if (tags[2] == "king"):
 			check = self.king(tags, pos2)
 
-		elif (self.pathBlocked(pos2)): check = False
+		if (self.pathBlocked(pos2)): check = False
 
 		elif (self.occupied(tags, pos2)): check = False
 
@@ -111,6 +178,14 @@ class Position():
 
 
 	def occupied(self, tags, pos):
+		'''
+		@param
+			tags: tags of piece to check
+			pos: position to check
+
+		@return
+			True if occupied by piece of same color, else False.
+		'''
 
 		if (tags[1] == self.board[pos[0]][pos[1]][1]):
 			check = True
@@ -122,9 +197,15 @@ class Position():
 
 
 	def pathBlocked(self, pos2):
+		'''
+		@param
+			pos2: position to check
+
+		@return
+			True if any piece is blocking the path to pos2, else False.
+		'''
 
 		pos1 = self.originalPosition
-
 		check = False
 
 		if (pos1[0] == pos2[0] or pos1[1] == pos2[1]):
@@ -137,9 +218,18 @@ class Position():
 
 
 	def rookPath(self, pos2):
+		'''
+		Called in pathBlocked()
+
+		@param
+			pos2: position to check
+
+		@return
+			True if any piece is blocking the path right, left, above or below
+			pos2, else False.
+		'''
 
 		pos1 = self.originalPosition
-
 		check = False
 
 		above = pos2[1] - pos1[1] < 0 and pos1[0] == pos2[0]
@@ -184,9 +274,18 @@ class Position():
 
 
 	def bishopPath(self, pos2):
+		'''
+		Called in pathBlocked()
+
+		@param
+			pos2: position to check
+
+		@return
+			True if any piece is blocking the path northwest, northeast, southwest
+			or southeast of pos2, else False.
+		'''
 
 		pos1 = self.originalPosition
-
 		check = False
 
 		west = pos2[0] - pos1[0] < 0
@@ -239,9 +338,18 @@ class Position():
 
 
 	def pawn(self, tags, pos2):
+		'''
+		Called from canMove(), checks if pawn can move.
+
+		@param
+			tags: tags of piece to check
+			pos2: position to check
+
+		@return
+			True if pawn can move, else False.
+		'''
 
 		pos1 = self.originalPosition
-
 		check = False
 
 		below = pos2[1] - pos1[1] == 1
@@ -258,11 +366,11 @@ class Position():
 				check = True
 
 			if (below and (right or left) and
-							self.board[pos2[0]][pos2[1]][1] == "white"):
+				self.board[pos2[0]][pos2[1]][1] == "white"):
 				check = True
 
 			if (below and (right or left) and
-							self.specialMoves.enPassant == pos2):
+				self.specialMoves.enPassant == pos2):
 				check = True
 
 			if (pos1[1] == 1 and pos2[1] - pos1[1] == 2 and inCol and empty):
@@ -290,9 +398,18 @@ class Position():
 
 
 	def rook(self, tags, pos2):
+		'''
+		Called from canMove(), checks if rook can move.
+
+		@param
+			tags: tags of piece to check
+			pos2: position to check
+
+		@return
+			True if rook can move, else False.
+		'''
 
 		pos1 = self.originalPosition
-
 		check = False
 
 		if ((pos1[0] == pos2[0] and pos1[1] != pos2[1]) or
@@ -304,9 +421,18 @@ class Position():
 
 
 	def knight(self, tags, pos2):
+		'''
+		Called from canMove(), checks if knight can move.
+
+		@param
+			tags: tags of piece to check
+			pos2: position to check
+
+		@return
+			True if knight can move, else False.
+		'''
 
 		pos1 = self.originalPosition
-
 		check = False
 
 		if ((abs(pos2[1] - pos1[1]) == 2 and abs(pos2[0] - pos1[0]) == 1) or
@@ -318,9 +444,18 @@ class Position():
 
 
 	def bishop(self, tags, pos2):
+		'''
+		Called from canMove(), checks if bishop can move.
+
+		@param
+			tags: tags of piece to check
+			pos2: position to check
+
+		@return
+			True if bishop can move, else False.
+		'''
 
 		pos1 = self.originalPosition
-
 		check = False
 
 		if (abs(pos1[0] - pos2[0]) == abs(pos1[1] - pos2[1])):
@@ -331,6 +466,16 @@ class Position():
 
 
 	def queen(self, tags, pos2):
+		'''
+		Called from canMove(), checks if queen can move.
+
+		@param
+			tags: tags of piece to check
+			pos2: position to check
+
+		@return
+			True if queen can move, else False.
+		'''
 
 		pos1 = self.originalPosition
 
@@ -346,9 +491,22 @@ class Position():
 
 
 	def king(self, tags, pos2):
+		'''
+		Called from canMove(), checks if king can move and castle.
+
+		@param
+			tags: tags of piece to check
+			pos2: position to check
+
+		@post
+			If king can castle, the appropiate rook is moved automatically. If
+			the king leaves the castle position, the rook is moved back.
+
+		@return
+			True if pawn can move, else False.
+		'''
 
 		pos1 = self.originalPosition
-
 		check = False
 
 		if ((abs(pos2[0] - pos1[0]) == 1 or pos1[0] == pos2[0]) and
@@ -366,6 +524,16 @@ class Position():
 
 
 	def canCastle(self, tags, pos2):
+		'''
+		Called from king(), checks if king can castle.
+
+		@param
+			tags: tags of piece to check
+			pos2: position to check
+
+		@return
+			True if king can castle, else False.
+		'''
 
 		check = True
 		color = tags[1]
@@ -425,6 +593,15 @@ class Position():
 
 
 	def castle(self, tags):
+		'''
+		Called from king(), moves appropiate rook to castle position.
+
+		@param
+			tags: tags of piece to check
+
+		@post
+			Rook has been moved, rookMoved is set to True
+		'''
 
 		color = tags[1]
 
@@ -449,6 +626,15 @@ class Position():
 
 
 	def resetRook(self, tags):
+		'''
+		Called from king(), resets Rook to original position.
+
+		@param
+			tags: tags of piece to check
+
+		@post
+			Rook is moved back original position and rookMoved is set to False.
+		'''
 
 		color = tags[1]
 		self.rookMoved = False
@@ -463,13 +649,15 @@ class Position():
 
 
 
-	def updateMoved(self, piece):
-
-		self.moved.append(piece)
-
-
-
 	def isVulnerable(self, pos, color):
+		'''
+		@param
+			pos: the position to check
+			color: the color of the piece to check
+
+		@return
+			True if pos is vulnerable, else False.
+		'''
 
 		firstTurn = False
 		vulnerable = False
@@ -508,16 +696,3 @@ class Position():
 			self.specialMovesOn = True
 
 		return vulnerable
-
-
-
-	def findTeam(self, color):
-
-		team = []
-
-		for x in range(8):
-			for y in range(8):
-				if (len(self.board[x][y]) != 1 and self.board[x][y][1] == color):
-					team.append((x, y, self.board[x][y]))
-
-		return team

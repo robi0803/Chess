@@ -21,6 +21,13 @@ class Graphics():
 
 
     def createWindow(self, root):
+        '''
+        @param
+            root: Tkinter root
+
+        @post
+            Window has been created
+        '''
 
         root.title("Chess")
         root.minsize(width = self.k.width, height = self.k.height)
@@ -29,6 +36,10 @@ class Graphics():
 
 
     def loadImages(self):
+        '''
+        @post
+            Images have been loaded
+        '''
 
         self.BoardImage = PhotoImage(file = 'src/board.gif')
         self.GreenBoxImage = PhotoImage(file = 'src/GreenBox.gif')
@@ -50,6 +61,10 @@ class Graphics():
 
 
     def restart(self):
+        '''
+        @post
+            All images have been deleted and reloaded
+        '''
 
         self.canvas.delete("all")
         self.createImages()
@@ -57,6 +72,16 @@ class Graphics():
 
 
     def createNewPiece(self, tags, pos):
+        '''
+        Used to promote pawn.
+
+        @param
+            tags: tags of piece to create
+            pos: position of new piece
+
+        @post
+            new piece has been created
+        '''
 
         if (tags[0] == "blkRook"):
             img = self.BlackRookImage
@@ -89,6 +114,10 @@ class Graphics():
 
 
     def createImages(self):
+        '''
+        @post
+            All images used throughout the game are created.
+        '''
 
         # board
         self.canvas.create_image(0, 0, image = self.BoardImage, anchor = "nw",
