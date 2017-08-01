@@ -18,14 +18,27 @@ class CPU():
 
 
 
-	def takeTurn(self, checkWin, createNewPiece):
+	def takeTurn(self, checkWin, createNewPiece, pawns):
+		'''
+		Handles the computers turn.
+
+		@param
+			checkWin: game.checkWin, checks for winner
+			createNewPiece: graphics.createPiece, promotes pawn
+
+		@post
+			The best move is found and the piece is moved. A pawn promotion is checked
+			for. The game updates and checks for a winner.
+		'''
 
 		temp = self.position.originalPosition
 
 		move = self.getMove()
 		self.movePiece(move)
 
-		if (move[0][2] == "pawn"): self.checkPromotion(move[0][0], move[1], createNewPiece)
+		if (move[0][2] == "pawn"):
+			self.checkPromotion(move[0][0], move[1], createNewPiece)
+			pawns(move[2], move[1], 0, 0)
 
 		self.position.capture(move[1], move[0])
 		self.position.updateMoved(move[0][0])
@@ -37,11 +50,16 @@ class CPU():
 
 
 
-
-
-
-
 	def movePiece(self, move):
+		'''
+		Moves piece given a move
+
+		@param
+			move: move from getMove(), ((identifier, color, type), new position, original position)
+
+		@post
+			The piece is moved.
+		'''
 
 		piece = move[0][0]
 		final = move[1]
@@ -55,6 +73,29 @@ class CPU():
 
 
 	def getMove(self):
+		'''
+		Finds best move. The algorithm is as follows.
+
+			for piece in team:
+				for every position:
+					if (piece can move to position):
+						append to Moves[]
+
+			for move in Moves[]:
+				temp = get stats of move
+
+				if (temp > best move):
+					clear tiedMoves[]
+					best move = temp
+					append temp to tiedMoves[]
+
+				if (temp == best move):
+					append temp to tiedMoves[]
+
+		@return
+			A random move from tiedMoves[] is returned.
+
+		'''
 
 		team = self.position.findTeam(self.color)
 		moves = []
@@ -90,6 +131,30 @@ class CPU():
 
 
 	def getStats(self, move, team):
+		'''
+		Finds stats for a given move. The algorithm is as follows.
+
+			for all pieces:
+				if (piece is currently vulnerable):
+					add to stats
+
+			move piece to new position
+
+			for all pieces:
+				if (piece is currently vulnerable):
+					subtract from stats
+
+			if (move results in capture of enemy):
+				add to stats
+
+		@param
+			move: move from getMove(), ((identifier, color, type), new position, original position)
+			team: computers team, returned from position.findTeam()
+
+		@return
+			Stats is returned.
+
+		'''
 
 		stats = 0
 		newPos = move[1]
@@ -133,6 +198,15 @@ class CPU():
 
 
 	def filter(self, tags):
+		'''
+		Finds value of stats based on piece type
+
+		@param
+			tags: tag of current piece
+
+		@return
+			returns stats
+		'''
 
 		if (tags[2] == "pawn"):
 			stats = 25
@@ -152,6 +226,15 @@ class CPU():
 
 
 	def capture(self, enemyClass):
+		'''
+		Finds value of stats based on piece type
+
+		@param
+			tags: tag of current piece
+
+		@return
+			returns stats
+		'''
 
 		if (enemyClass == "pawn"):
 			stats = 25
@@ -171,6 +254,17 @@ class CPU():
 
 
 	def checkPromotion(self, piece, pos, createNewPiece):
+		'''
+		Checks for pawn promotion.
+
+		@param
+			piece: piece identifier
+			pos: piece position
+			createNewPiece: graphics.createPiece, promotes pawn
+
+		@post
+			If pawn makes it to opposite side of board it is promoted to queen.
+		'''
 
 		if (self.color == "black" and pos[1] == 7):
 			self.canvas.delete(piece)

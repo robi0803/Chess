@@ -17,8 +17,22 @@ class SpecialMoves():
 
 
 	def pawns(self, pos1, pos2, unbind, createPiece):
+		'''
+		Checks for en-passant and promotion.
 
-		piece = self.canvas.find_closest(pos2[0] * self.k.space, pos2[1] * self.k.space)
+		@param
+			pos1: original position
+			pos2: new position
+			unbind: game.unbind(), unbinds pieces
+			createPiece: game.createPiece(), promotes pawn
+
+		@post
+			If pawn makes it to other side of board, it is promoted. If an en-passant
+			oppurtunity occurs, it is marked. Else all en-passant oppurtunities are
+			cleared.
+		'''
+
+		piece = self.canvas.find_closest((pos2[0]*self.k.space)+10, (pos2[1]*self.k.space)+10)
 		tags = self.canvas.gettags(piece)
 		self.color = tags[1]
 
@@ -43,6 +57,15 @@ class SpecialMoves():
 
 
 	def promote(self, pos, piece, createPiece):
+		'''
+		@param:
+			pos: position of piece
+			piece: piece identifier
+			createPiece: game.createPiece, promotes pawn
+
+		@post:
+			Promotion menu is brought up.
+		'''
 
 		bg = self.canvas.find_withtag("winBg")
 		text = self.canvas.find_withtag("promotionText")
@@ -105,6 +128,10 @@ class SpecialMoves():
 
 
 	def hide(self):
+		'''
+		@post
+			Promotion menu is hidden.
+		'''
 
 		bg = self.canvas.find_withtag("winBg")
 		text = self.canvas.find_withtag("promotionText")
@@ -146,18 +173,33 @@ class SpecialMoves():
 
 
 
-	def markEnPassant(self, pos1, piece):
+	def markEnPassant(self, pos, piece):
+		'''
+		@param
+			pos: original position of pawn
+			piece: identifier of piece
+
+		@post
+			enPassantPiece and enPassant have been initialized.
+		'''
 
 		self.enPassantPiece = piece
 
 		if (self.color == "black"):
-			self.enPassant = (pos1[0], pos1[1] + 1)
+			self.enPassant = (pos[0], pos[1] + 1)
 		else:
-			self.enPassant = (pos1[0], pos1[1] - 1)
+			self.enPassant = (pos[0], pos[1] - 1)
 
 
 
 	def checkEnPassant(self, pos):
+		'''
+		@param
+			pos: position to check
+
+		@post
+			If piece moves to enPassant, enPassantPiece is hidden.
+		'''
 
 		if (pos == self.enPassant):
 			self.canvas.itemconfig(self.enPassantPiece, state = "hidden")

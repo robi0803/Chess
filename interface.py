@@ -16,6 +16,19 @@ class Interface():
 
 
 	def checkWin(self, unbind, disableMenu, restart, showMain):
+		'''
+		Checks for winner and displays win menu.
+
+		@param
+			unbind: game.unbind(), removes bindings from pieces
+			disableMenu: game.disableMenu(), disables in-game menu
+			restart: game.restart(), restarts game,
+			showMain: game.showMain(), shows main menu
+
+		@post
+			If there is a winner the win menu is displayed.
+
+		'''
 
 		kings = self.canvas.find_withtag("king")
 
@@ -37,6 +50,17 @@ class Interface():
 
 
 	def win(self, unbind, disableMenu, restart, showMain):
+		'''
+		@param
+			unbind: game.unbind(), removes bindings from pieces
+			disableMenu: game.disableMenu(), disables in-game menu
+			restart: game.restart(), restarts game,
+			showMain: game.showMain(), shows main menu
+
+		@post
+			Bindings are removed from pieces and in-game menu. Images for the
+			win menu are initialized and the win menu is displayed.
+		'''
 
 		unbind()
 		disableMenu()
@@ -46,6 +70,10 @@ class Interface():
 
 
 	def whiteWin(self):
+		'''
+		@post
+			Title text for a white win is displayed
+		'''
 
 		self.canvas.itemconfig(self.whtWin, state = "disabled")
 		self.canvas.tag_raise(self.whtWin)
@@ -53,6 +81,10 @@ class Interface():
 
 
 	def blackWin(self):
+		'''
+		@post
+			Title text for a black win is displayed
+		'''
 
 		self.canvas.itemconfig(self.blkWin, state = "disabled")
 		self.canvas.tag_raise(self.blkWin)
@@ -60,6 +92,16 @@ class Interface():
 
 
 	def displayWinMenu(self, restart, showMain):
+		'''
+		Displays win menu
+
+		@param
+			restart: game.restart(), restarts game,
+			showMain: game.showMain(), shows main menu
+
+		@post
+			Win menu is displayed and bindings are added for its buttons.
+		'''
 
 		self.canvas.itemconfig(self.winBg, state = "disabled")
 		self.canvas.itemconfig(self.winRestartText, state = "disabled")
@@ -85,6 +127,10 @@ class Interface():
 
 
 	def findWinImages(self):
+		'''
+		@post
+			Images for win menu are initialized.
+		'''
 
 		self.winBg = self.canvas.find_withtag("winBg")
 		self.whtWin = self.canvas.find_withtag("whtWin")
@@ -101,6 +147,20 @@ class Interface():
 
 
 	def menu(self, event, bind, showMenu, restart, main):
+		'''
+		Shows/Hides in-game menu.
+
+		@param
+			event: Tkinter event
+			bind: game.bind(), adds bindings to pieces
+			showMenu: game.showMenu(), calls interface.menu()
+			restart: game.restart(), restarts game,
+			main: game.showMain(), shows main menu
+
+		@post
+			If menu was hidden, it is now displayed. If menu was displayed, it is
+			now hidden.
+		'''
 
 		self.findMenuImages()
 
@@ -136,11 +196,15 @@ class Interface():
 
 		else:
 			bind()
-			self.hideMenu(event)
+			self.hideMenu()
 
 
 
-	def hideMenu(self, event):
+	def hideMenu(self):
+		'''
+		@post
+			In-game menu is hidden.
+		'''
 
 		self.canvas.itemconfig(self.menuBg, state = "hidden")
 
@@ -161,6 +225,10 @@ class Interface():
 
 
 	def findMenuImages(self):
+		'''
+		@post
+			In-game menu images are initialized.
+		'''
 
 		self.menuBg = self.canvas.find_withtag("menuBg")
 
@@ -177,6 +245,17 @@ class Interface():
 
 
 	def mainMenu(self, singlePlayer, multiPlayer):
+		'''
+		Displays main menu
+
+		@param
+			singlePlayer: game.setSinglePlayer(), sets up single player game
+			multiPlayer: game.setMultiPlayer(), sets up multiPlayer game
+
+		@post
+			Main menu images are initialized, main menu is displayed. Bindings are
+			added for main menu buttons.
+		'''
 
 		tokens = self.canvas.find_withtag("token")
 		self.canvas.itemconfig("token", state = "hidden")
@@ -214,6 +293,10 @@ class Interface():
 
 
 	def hideMain(self):
+		'''
+		@post
+			Bindings for main menu are removed, main menu is hidden.
+		'''
 
 		self.canvas.itemconfig(self.winBg, state = "hidden")
 		self.canvas.itemconfig(self.mainBg, state = "hidden")
@@ -237,6 +320,10 @@ class Interface():
 
 
 	def findMainImages(self):
+		'''
+		@post
+			Main menu images are initialized.
+		'''
 
 		self.winBg = self.canvas.find_withtag("winBg")
 		self.mainBg = self.canvas.find_withtag("mainBg")
@@ -253,5 +340,9 @@ class Interface():
 
 
 	def exitGame(self, event):
+		'''
+		@post
+			Game is closed.
+		'''
 
 		exit()

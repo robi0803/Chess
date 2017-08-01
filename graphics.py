@@ -63,7 +63,7 @@ class Graphics():
     def restart(self):
         '''
         @post
-            All images have been deleted and reloaded
+            All images have been deleted and recreated.
         '''
 
         self.canvas.delete("all")
@@ -80,7 +80,7 @@ class Graphics():
             pos: position of new piece
 
         @post
-            new piece has been created
+            New piece has been created.
         '''
 
         if (tags[0] == "blkRook"):

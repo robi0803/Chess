@@ -68,7 +68,8 @@ class Game():
 
 		@post
 			data and originalPosition are initialized to the piece closest
-			to the mouse click event.
+			to the mouse click event. This piece's image is raised to the top layer.
+			A border is created around the current tile.
 		'''
 
 		self.data["piece"] = self.findClosest(event)
@@ -92,8 +93,8 @@ class Game():
 				   event and is called when this event occurs.
 
 		@post
-			The corresponding piece is moved and createBorder() has been called. Try block
-			is used to keep piece inside window.
+			The corresponding piece is moved and a border is created around the current
+			tile. Try block is used to keep piece inside window.
 		'''
 
 		self.movement.drag(event, self.data)
@@ -166,7 +167,7 @@ class Game():
 				self.setColor()
 				self.bind()
 
-			self.cpu.takeTurn(self.checkWin, self.graphics.createNewPiece)
+			self.cpu.takeTurn(self.checkWin, self.graphics.createNewPiece, self.specialMoves.pawns)
 
 
 
@@ -220,7 +221,7 @@ class Game():
 	def bind(self):
 		'''
 		@post
-			Pieces of current color are bound.
+			Bindings are added for pieces of current color.
 		'''
 
 		self.canvas.tag_bind(self.color, "<ButtonPress-1>", self.mouseClick)
@@ -232,7 +233,7 @@ class Game():
 	def unbind(self):
 		'''
 		@post
-			Pieces of current color are unbound.
+			Bindings are removed for pieces of current color.
 		'''
 
 		self.canvas.tag_unbind(self.color, "<ButtonPress-1>")
@@ -243,7 +244,7 @@ class Game():
 
 	def changeTurn(self):
 		'''
-		Changes turn for multi player game.
+		Changes turn for multi-player game.
 
 		@post
 			Pieces are bound to other players color.
@@ -258,7 +259,7 @@ class Game():
 	def setColor(self):
 		'''
 		@post
-			Sets color based off of current piece. If multi player game, also sets
+			Sets color based off of current piece. If single-player game, also sets
 			cpu color.
 		'''
 
@@ -428,7 +429,7 @@ class Game():
 			event: Tkinter event, needed to bind function
 
 		@post
-			Game is reset, main menu is displayed.
+			Game is reset, bindings are removed, main menu is displayed.
 
 		'''
 
