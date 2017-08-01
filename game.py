@@ -1,6 +1,8 @@
-from tkinter import *
+try:
+	from tkinter import *
+except ImportError:
+	from Tkinter import *
 from globals import K
-
 from position import Position
 from specialmoves import SpecialMoves
 from movement import Movement

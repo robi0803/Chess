@@ -1,4 +1,7 @@
-from tkinter import *
+try:
+	from tkinter import *
+except ImportError:
+	from Tkinter import *
 from globals import K
 
 
