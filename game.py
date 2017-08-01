@@ -173,7 +173,7 @@ class Game():
 
 	def findClosest(self, event):
 		'''
-		Prevents user from grabbing board. Four more locations are attempted.
+		Prevents user from grabbing board. Four more locations are attempted,
 		if canvas.find_closest() doesn't return a piece.
 
 		@param
