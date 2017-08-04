@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 try:
 	from tkinter import *
 except ImportError:

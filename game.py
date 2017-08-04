@@ -366,6 +366,7 @@ class Game():
 		tags = self.canvas.gettags(piece)
 		self.graphics.createNewPiece(tags, self.getPosition())
 		self.specialMoves.hide()
+		self.position.updateBoard()
 		self.bind()
 
 

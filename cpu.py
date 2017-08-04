@@ -115,43 +115,53 @@ class CPU():
 									 (piece[0], piece[1])))     # original position
 
 		tiedMoves = []
-		temp = best = self.getStats(moves[0], team)
+		if (len(moves) != 0):
+			temp = best = self.getStats(moves[0])
 
-		for move in moves:
-			temp = self.getStats(move, team)
-			if (temp > best):
-				best = temp
-				tiedMoves = []
-				tiedMoves.append(move)
+			for move in moves:
+				temp = self.getStats(move)
+				if (temp > best):
+					best = temp
+					tiedMoves = []
+					tiedMoves.append(move)
 
-			elif (temp == best):
-				tiedMoves.append(move)
+				elif (temp == best):
+					tiedMoves.append(move)
 
 		random.seed()
 		return tiedMoves[ random.randint(0, len(tiedMoves) - 1) ]
 
 
 
-	def getStats(self, move, team):
+	def getStats(self, move):
 		'''
 		Finds stats for a given move. The algorithm is as follows.
 
-			for all pieces:
+			for all cpu pieces:
 				if (piece is currently vulnerable):
 					add to stats
 
-			move piece to new position
-
-			for all pieces:
+			for all player pieces:
 				if (piece is currently vulnerable):
 					subtract from stats
 
+			move piece to new position
+
+			for all cpu pieces:
+				if (piece is currently vulnerable):
+					subtract from stats
+
+			for all player pieces:
+				if (piece is currently vulnerable):
+					add to stats
+
 			if (move results in capture of enemy):
 				add to stats
+				if (move results in piece being vulnerable):
+					subtract from stats
 
 		@param
 			move: move from getMove(), ((identifier, color, type), new position, original position)
-			team: computers team, returned from position.findTeam()
 
 		@return
 			Stats is returned.
@@ -163,37 +173,61 @@ class CPU():
 		curPos = move[2]
 
 		if (self.color == "white"):
-			enemy = "black"
+			player = "black"
 		else:
-			enemy = "white"
+			player = "white"
 
 
-		# if (curPos is vulnerable)
-		for piece in team:
+		# if (cpu is vulnerable from curPos)
+		cpuTeam = self.position.findTeam(self.color)
+		for piece in cpuTeam:
 			tags = piece[2]
 			if (self.position.isVulnerable((piece[0], piece[1]), self.color)):
 				stats += self.filter(tags)
 
 
-		# if (newPos is vulnerable)
+		# if (player is vulnerable from curPos)
+		playerTeam = self.position.findTeam(player)
+		for piece in playerTeam:
+			tags = piece[2]
+			if (self.position.isVulnerable((piece[0], piece[1]), player)):
+				stats -= (1/8)*self.filter(tags)
+
+
+		# move to newPos
 		self.position.board[newPos[0]][newPos[1]] = self.position.board[curPos[0]][curPos[1]]
 		self.position.board[curPos[0]][curPos[1]] = "none"
-		team = self.position.findTeam(self.color)
 
-		for piece in team:
+		# if (cpuTeam is vulnerable from newPos)
+		cpuTeam = self.position.findTeam(self.color)
+		for piece in cpuTeam:
 			tags = piece[2]
 			if (self.position.isVulnerable((piece[0], piece[1]), self.color)):
 				stats -= self.filter(tags)
 
+		# if (piece is vulnerable from newPos)
+		check = False
+		if (self.position.isVulnerable((newPos[0], newPos[1]), self.color)):
+			check = True
+			temp = self.filter(move[0])
+
+		# if (player is vulnerable for newPos)
+		playerTeam = self.position.findTeam(player)
+		for piece in playerTeam:
+			tags = piece[2]
+			if (self.position.isVulnerable((piece[0], piece[1]), player)):
+				stats += (1/8)*self.filter(tags)
+
+		# move back to curPos
 		self.position.updateBoard()
 
-
 		# if (can capture)
-		if (enemy == self.position.board[newPos[0]][newPos[1]][1]):
+		if (player == self.position.board[newPos[0]][newPos[1]][1]):
 			tags = move[0]
-			enemyClass = self.position.board[newPos[0]][newPos[1]][2]
-			stats += self.capture(enemyClass)
-			stats -= (1/4)*self.filter(tags)
+			pieceType = self.position.board[newPos[0]][newPos[1]][2]
+			stats += self.filterCapture(pieceType)
+			if (check):
+				stats -= temp
 
 		return stats
 
@@ -227,7 +261,7 @@ class CPU():
 
 
 
-	def capture(self, enemyClass):
+	def filterCapture(self, enemyClass):
 		'''
 		Finds value of stats based on piece type
 
